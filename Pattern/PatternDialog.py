@@ -87,19 +87,3 @@ class PatternDialog(QtWidgets.QDialog):
     def exec_(self):
         super(PatternDialog, self).exec_()
         return self.returnVal
-
-
-    # def setButtonBox(self):
-    #     self.buttonBox.setGeometry(QtCore.QRect(190, 590, 211, 23))
-    #     self.buttonBox.setSizeIncrement(QtCore.QSize(0, 0))
-    #     self.buttonBox.setBaseSize(QtCore.QSize(0, 0))
-    #     self.buttonBox.setMouseTracking(False)
-    #     self.buttonBox.setAutoFillBackground(False)
-    #     self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-    #     self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
-    #     self.buttonBox.setCenterButtons(True)
-    #     self.buttonBox.setObjectName("buttonBox")
-    #     # self.buttonBox.accepted.connect(Dialog.accept)
-    #     # self.buttonBox.rejected.connect(Dialog.reject)
-
-

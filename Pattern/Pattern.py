@@ -41,12 +41,6 @@ class Pattern:
                 [self.image1_exist, self.image1XY, self.image1SSize],
                 [self.image2_exist, self.image2XY, self.image2SSize]]
 
-def findPattermById(id):
-    for i in patterns:
-        if id.replace('./', '').replace('Images/Patterns', '').replace('.png', '') == \
-                i[0].replace('./', '').replace('Images/Patterns', '').replace('.png', ''):
-            return i.getObject()
-
 
 def registerPatterns():
     pathToPatterns = './Images/Patterns'
