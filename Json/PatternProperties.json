@@ -12,5 +12,18 @@
         "text1Size": 20,
         "line1XY": [0, 578],
         "line1Size": [928, 502]
+    },
+    "pattern3": {
+        "line1": 1,
+        "text1Size": 32,
+        "line1XY": [405, 812],
+        "line1Size": [1415, 118],
+        "line2": 1,
+        "text2Size": 20,
+        "line2XY": [405, 930],
+        "line2Size": [1415, 118],
+        "image1": 1,
+        "image1XY": [170, 101],
+        "image1Size": [1585, 632]
     }
 }
