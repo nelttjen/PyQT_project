@@ -1,0 +1,13 @@
+{
+    "pattern1": {
+        "image1": 1,
+        "image2": 1,
+        "image1XY": [988, 0],
+        "image2XY": [988, 542],
+        "image1Size": [929, 530],
+        "image2Size": [929, 538]
+    },
+    "pattern2": {
+
+    }
+}
