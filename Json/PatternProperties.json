@@ -8,6 +8,9 @@
         "image2Size": [929, 538]
     },
     "pattern2": {
-
+        "line1": 1,
+        "text1Size": 20,
+        "line1XY": [0, 578],
+        "line1Size": [928, 502]
     }
 }

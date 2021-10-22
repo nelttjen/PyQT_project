@@ -111,7 +111,6 @@ def checkPreviewPatterns():
                     copy = Image.open(f'./Images/Patterns/{i}')
                     copy.save(f'./Images/Patterns/Preview/{i}')
                 except PermissionError as e:
-                    # IDK why this happens
                     continue
 
 
