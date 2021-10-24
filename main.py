@@ -35,9 +35,6 @@ class Window(QMainWindow):
         self.img1 = None
         self.img2 = None
 
-        self.img_text1 = None
-        self.img_text2 = None
-
         self.pixmap = QPixmap('Images/Default/default.png')
         self.img_preview.setPixmap(self.pixmap)
         self.img = Image.open('Images/Default/default.png')
@@ -51,6 +48,7 @@ class Window(QMainWindow):
         self.btn_pattern.clicked.connect(self.setPattern)
 
         self.btn_preview.clicked.connect(self.updatePreview)
+        self.btn_save.clicked.connect(self.tetrad)
 
     def clearPreview(self):
         self.pixmap = QPixmap('Images/Default/default.png')
@@ -106,27 +104,33 @@ class Window(QMainWindow):
         if self.img_pattern:
             meme = Image.open('Images/Temp/img_patternTemp.png').convert('RGBA')
             meme_pixels = meme.load()
+            draw = ImageDraw.Draw(meme)
             if self.img_pattern[1][0]:
                 try:
                     size = self.img_pattern[1][2]
                     position = self.img_pattern[1][1]
                     text_size = self.img_pattern[1][3]
                     text = self.lineEdit1.text()
-                    self.img_text1 = Image.new("RGBA", size, (0, 0, 0, 0))
-                    draw = ImageDraw.Draw(self.img_text1)
                     font = ImageFont.truetype("arial.ttf", text_size)
                     w, h = draw.textsize(text, font=font)
-                    draw.text(((size[0] - w) / 2, (size[1] - h) / 2),
+                    draw.text((((size[0] - w) / 2) + position[0], ((size[1] - h) / 2) + position[1]),
                               text,
                               fill=(255, 255, 255), font=font,
                               align="center", stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
-                    self.img_text1.save('Images/Temp/img_text1Temp.png')
-                    text1_pixels = self.img_text1.load()
-                    for x in range(position[0], position[0] + size[0]):
-                        for y in range(position[1], position[1] + size[1]):
-                            r, g, b, a = text1_pixels[x - position[0], y - position[1]]
-                            if a != 0:
-                                meme_pixels[x, y] = r, g, b, a
+                except Exception as e:
+                    print(e.__str__())
+            if self.img_pattern[2][0]:
+                try:
+                    size = self.img_pattern[2][2]
+                    position = self.img_pattern[2][1]
+                    text_size = self.img_pattern[2][3]
+                    text = self.lineEdit2.text()
+                    font = ImageFont.truetype("arial.ttf", text_size)
+                    w, h = draw.textsize(text, font=font)
+                    draw.text((((size[0] - w) / 2) + position[0], ((size[1] - h) / 2) + position[1]),
+                              text,
+                              fill=(255, 255, 255), font=font,
+                              align="center", stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
                 except Exception as e:
                     print(e.__str__())
             meme.save('Images/Output/output.png')
@@ -162,6 +166,11 @@ class Window(QMainWindow):
         self.img2 = None
         self.image1Info.setText('Картинка 1\nне загружена')
         self.image2Info.setText('Картинка 2\nне загружена')
+
+    def tetrad(self):
+        tetrad = (482, 581)
+        conspect = Image.open('Images/Temp/tetrad.png').resize(tetrad)
+        conspect.save('Images/Temp/tetrad1.png')
 
 
 def resizePatterns():
