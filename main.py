@@ -167,10 +167,10 @@ class Window(QMainWindow):
         self.image1Info.setText('Картинка 1\nне загружена')
         self.image2Info.setText('Картинка 2\nне загружена')
 
-    def tetrad(self):
-        tetrad = (482, 581)
-        conspect = Image.open('Images/Temp/tetrad.png').resize(tetrad)
-        conspect.save('Images/Temp/tetrad1.png')
+    # def tetrad(self):
+    #     tetrad = (482, 581)
+    #     conspect = Image.open('Images/Temp/tetrad.png').resize(tetrad)
+    #     conspect.save('Images/Temp/tetrad1.png')
 
 
 def resizePatterns():
