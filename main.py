@@ -111,7 +111,7 @@ class Window(QMainWindow):
                     size = self.img_pattern[1][2]
                     position = self.img_pattern[1][1]
                     text_size = self.img_pattern[1][3]
-                    text = self.lineEdit1.text() + '\n или пидорас?' + '\n или пидорас?'
+                    text = self.lineEdit1.text()
                     self.img_text1 = Image.new("RGBA", size, (0, 0, 0, 0))
                     draw = ImageDraw.Draw(self.img_text1)
                     font = ImageFont.truetype("arial.ttf", text_size)
