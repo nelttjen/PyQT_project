@@ -15,11 +15,11 @@
     },
     "pattern3": {
         "line1": 1,
-        "text1Size": 32,
+        "text1Size": 160,
         "line1XY": [405, 812],
         "line1Size": [1415, 118],
         "line2": 1,
-        "text2Size": 20,
+        "text2Size": 100,
         "line2XY": [405, 930],
         "line2Size": [1415, 118],
         "image1": 1,
@@ -28,7 +28,7 @@
     },
     "pattern4": {
         "line1": 1,
-        "text1Size": 32,
+        "text1Size": 40,
         "line1XY": [389, 773],
         "line1Size": [785, 63]
     },
@@ -42,7 +42,7 @@
     },
     "pattern6": {
         "line1": 1,
-        "text1Size": 12,
+        "text1Size": 60,
         "line1XY": [820, 439],
         "line1Size": [453, 180]
     },
@@ -53,19 +53,19 @@
     },
     "pattern8": {
         "line1": 1,
-        "text1Size": 40,
+        "text1Size": 200,
         "line1XY": [68, 167],
         "line1Size": [1020, 610]
     },
     "pattern9": {
         "line1": 1,
-        "text1Size": 50,
+        "text1Size": 100,
         "line1XY": [0, 0],
-        "line1Size": [1920, 120],
+        "line1Size": [1920, 200],
         "line2": 1,
-        "text2Size": 50,
-        "line2XY": [0, 960],
-        "line2Size": [1920, 120]
+        "text2Size": 100,
+        "line2XY": [0, 880],
+        "line2Size": [1920, 200]
     },
     "pattern10": {
         "image1": 1,

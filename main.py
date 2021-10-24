@@ -83,50 +83,55 @@ class Window(QMainWindow):
                 else:
                     self.img_pattern = None
             self.updateEdits(self.img_pattern)
+
+            self.img.save('Images/Temp/img_patternTemp.png')
             img_preview = self.img.resize(self.previewSize)
-            img_preview.save('Images/Temp/img_patternTemp.png')
-            self.setPixmap('Images/Temp/img_patternTemp.png')
+            img_preview.save('Images/Preview/preview.png')
+            self.setPixmap()
             print(self.img_pattern)
         except Exception as e:
             self.clearPreview()
             print(e)
 
-    def setPixmap(self, path='Images/Temp/img_previewTemp.png'):
+    def setPixmap(self, path='Images/Preview/preview.png'):
         self.pixmap = QPixmap(path)
         self.img_preview.setPixmap(self.pixmap)
 
     def updatePreview(self):
         if self.img_pattern:
+            self.recreateImage()
+            self.setPixmap()
+
+    def recreateImage(self):
+        if self.img_pattern:
+            meme = Image.open('Images/Temp/img_patternTemp.png').convert('RGBA')
+            meme_pixels = meme.load()
             if self.img_pattern[1][0]:
                 try:
-                    self.img_text1 = Image.new(mode='RGBA', size=self.img_pattern[1][2], color=(255, 255, 255, 0))
+                    size = self.img_pattern[1][2]
+                    position = self.img_pattern[1][1]
+                    text_size = self.img_pattern[1][3]
+                    text = self.lineEdit1.text() + '\n или пидорас?' + '\n или пидорас?'
+                    self.img_text1 = Image.new("RGBA", size, (0, 0, 0, 0))
                     draw = ImageDraw.Draw(self.img_text1)
-                    draw.text((self.img_text1.size[0] / 7, self.img_text1.size[1] / 3), self.lineEdit1.text(),
-                              fill=(255, 255, 255),
-                              font=ImageFont.truetype("arial.ttf", self.img_pattern[1][3]),
-                              align="center", stroke_width=2, stroke_fill=(0, 0, 0))
+                    font = ImageFont.truetype("arial.ttf", text_size)
+                    w, h = draw.textsize(text, font=font)
+                    draw.text(((size[0] - w) / 2, (size[1] - h) / 2),
+                              text,
+                              fill=(255, 255, 255), font=font,
+                              align="center", stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
                     self.img_text1.save('Images/Temp/img_text1Temp.png')
-
-                    attitude = (1920 / self.previewSize[0], 1080 / self.previewSize[1])
-                    resizeToPreview = (int(self.img_pattern[1][2][0] / attitude[0]),
-                                       int(self.img_pattern[1][2][1] / attitude[1]))
-                    positionOnPreview = (int(self.img_pattern[1][1][0] / attitude[0]),
-                                         int(self.img_pattern[1][1][1] / attitude[1]))
-
-                    previewImg = Image.open('Images/Temp/img_patternTemp.png').convert('RGBA')
-                    previewText1 = self.img_text1.resize(resizeToPreview)
-
-                    previewImg_pixels = previewImg.load()
-                    text1_pixels = previewText1.load()
-                    for x in range(positionOnPreview[0], positionOnPreview[0] + resizeToPreview[0]):
-                        for y in range(positionOnPreview[1], positionOnPreview[1] + resizeToPreview[1]):
-                            r, g, b, a = text1_pixels[x - positionOnPreview[0], y - positionOnPreview[1]]
+                    text1_pixels = self.img_text1.load()
+                    for x in range(position[0], position[0] + size[0]):
+                        for y in range(position[1], position[1] + size[1]):
+                            r, g, b, a = text1_pixels[x - position[0], y - position[1]]
                             if a != 0:
-                                previewImg_pixels[x, y] = r, g, b, a
-                    previewImg.save('Images/Temp/img_previewTemp.png')
-                    self.setPixmap()
+                                meme_pixels[x, y] = r, g, b, a
                 except Exception as e:
                     print(e.__str__())
+            meme.save('Images/Output/output.png')
+            img_preview = meme.resize(self.previewSize)
+            img_preview.save('Images/Preview/preview.png')
 
     def updateEdits(self, pattern=None):
         if pattern:
