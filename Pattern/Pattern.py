@@ -2,6 +2,7 @@ class Pattern:
     def __init__(self, line1=False, line2=False,
                  image1=False, image2=False,
                  text1Size=0, text2Size=0,
+                 text1Delimiter=0, text2Delimiter=0,
                  line1XY=(0, 0), line2XY=(0, 0),
                  image1XY=(0, 0), image2XY=(0, 0),
                  line1Size=(0, 0), line2Size=(0, 0),
@@ -18,6 +19,8 @@ class Pattern:
         self.line2Size = line2Size if self.line2 else None
         self.text1Size = text1Size if self.line1 else None
         self.text2Size = text2Size if self.line2 else None
+        self.text1Delimiter = text1Delimiter if self.line1 else None
+        self.text2Delimiter = text2Delimiter if self.line2 else None
 
         self.image1_exist = image1
         self.image2_exist = image2
@@ -28,8 +31,8 @@ class Pattern:
 
     def getObject(self):
         return [self.filePath,
-                [self.line1, self.line1XY, self.line1Size, self.text1Size],
-                [self.line2, self.line2XY, self.line2Size, self.text2Size],
+                [self.line1, self.line1XY, self.line1Size, self.text1Size, self.text1Delimiter],
+                [self.line2, self.line2XY, self.line2Size, self.text2Size, self.text2Delimiter],
                 [self.image1_exist, self.image1XY, self.image1SSize],
                 [self.image2_exist, self.image2XY, self.image2SSize]]
 

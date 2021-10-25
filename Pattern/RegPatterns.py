@@ -14,6 +14,7 @@ def registerPatterns():
     keys = ['line1', 'line2',
             'image1', 'image2',
             'text1Size', 'text2Size',
+            'text1Delimiter', 'text2Delimiter',
             'line1XY', 'line2XY',
             'image1XY', 'image2XY',
             'line1Size', 'line2Size',
@@ -36,7 +37,7 @@ def registerPatterns():
                 else:
                     if k == 'line1' or k == 'line2' or k == 'image1' or k == 'image2':
                         temp_data[k] = False
-                    elif k == 'text1Size' or k == 'text2Size':
+                    elif k == 'text1Size' or k == 'text2Size' or k == 'text1Delimiter' or k == 'text2Delimiter':
                         temp_data[k] = 0
                     elif k == 'line1XY' or k == 'line2XY' or k == 'image1XY' or k == 'image2XY' \
                             or k == 'image1Size' or k == 'image2Size' or k == 'line1Size' or k == 'line2Size':
@@ -45,10 +46,11 @@ def registerPatterns():
             new_pattern = Pattern(line1=temp_data[keys[0]], line2=temp_data[keys[1]],
                                   image1=temp_data[keys[2]], image2=temp_data[keys[3]],
                                   text1Size=temp_data[keys[4]], text2Size=temp_data[keys[5]],
-                                  line1XY=tuple(temp_data[keys[6]]), line2XY=tuple(temp_data[keys[7]]),
-                                  image1XY=tuple(temp_data[keys[8]]), image2XY=tuple(temp_data[keys[9]]),
-                                  line1Size=tuple(temp_data[keys[10]]), line2Size=tuple(temp_data[keys[11]]),
-                                  image1Size=tuple(temp_data[keys[12]]), image2Size=tuple(temp_data[keys[13]]),
+                                  text1Delimiter=temp_data[keys[6]], text2Delimiter=temp_data[keys[7]],
+                                  line1XY=tuple(temp_data[keys[8]]), line2XY=tuple(temp_data[keys[9]]),
+                                  image1XY=tuple(temp_data[keys[10]]), image2XY=tuple(temp_data[keys[11]]),
+                                  line1Size=tuple(temp_data[keys[12]]), line2Size=tuple(temp_data[keys[13]]),
+                                  image1Size=tuple(temp_data[keys[14]]), image2Size=tuple(temp_data[keys[15]]),
                                   filePath=f'{pathToPatterns}/{i}')
             patterns.append(new_pattern)
     return patterns

@@ -10,6 +10,7 @@
     "pattern2": {
         "line1": 1,
         "text1Size": 120,
+        "text1Delimiter": 2,
         "line1XY": [0, 578],
         "line1Size": [928, 502]
     },
@@ -43,6 +44,7 @@
     "pattern6": {
         "line1": 1,
         "text1Size": 60,
+        "text1Delimiter": 2,
         "line1XY": [820, 439],
         "line1Size": [453, 180]
     },
@@ -53,7 +55,8 @@
     },
     "pattern8": {
         "line1": 1,
-        "text1Size": 200,
+        "text1Size": 100,
+        "text1Delimiter": 4,
         "line1XY": [68, 167],
         "line1Size": [1020, 610]
     },

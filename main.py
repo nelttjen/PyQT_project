@@ -112,9 +112,23 @@ class Window(QMainWindow):
                     size = self.img_pattern[1][2]
                     position = self.img_pattern[1][1]
                     text_size = self.img_pattern[1][3]
+                    delimiter = self.img_pattern[1][4]
                     text = self.lineEdit1.text()
+                    if 0 < delimiter < len(text.split()):
+                        text = text.split()
+                        temp_text = []
+                        tmp_count = 0
+                        for i in range(len(text)):
+                            if tmp_count == delimiter:
+                                tmp_count = 0
+                                temp_text[i - 1] = f'{temp_text[i - 1]}\n'
+                            temp_text.append(text[i])
+                            tmp_count += 1
+                        text = ' '.join(temp_text)
+                        text = text.replace('\n ', '\n')
                     font = ImageFont.truetype("arial.ttf", text_size)
                     w, h = draw.textsize(text, font=font)
+                    h += 20 * delimiter
                     draw.text((((size[0] - w) / 2) + position[0], ((size[1] - h) / 2) + position[1]),
                               text,
                               fill=(255, 255, 255), font=font,
