@@ -12,7 +12,7 @@ import shutil
 from Pattern.PatternDialog import PatternDialog
 from Utils.Pallite import createPallite
 from Utils.SortPatterns import sortPatterns
-from Pattern.Pattern import registerPatterns
+from Pattern.RegPatterns import registerPatterns
 
 
 class Window(QMainWindow):
@@ -34,6 +34,7 @@ class Window(QMainWindow):
 
         self.img1 = None
         self.img2 = None
+        self.textSize = 0
 
         self.pixmap = QPixmap('Images/Default/default.png')
         self.img_preview.setPixmap(self.pixmap)
@@ -55,6 +56,7 @@ class Window(QMainWindow):
         self.img_preview.setPixmap(self.pixmap)
         self.img_pattern = None
         self.val = None
+        self.textSize = 0
         self.updateEdits()
 
     def setPattern(self):
@@ -167,10 +169,20 @@ class Window(QMainWindow):
         self.image1Info.setText('Картинка 1\nне загружена')
         self.image2Info.setText('Картинка 2\nне загружена')
 
-    # def tetrad(self):
-    #     tetrad = (482, 581)
-    #     conspect = Image.open('Images/Temp/tetrad.png').resize(tetrad)
-    #     conspect.save('Images/Temp/tetrad1.png')
+    def tetrad(self):
+        try:
+            tetrad = (int(482 * 1.25), int(581 * 1.3))
+            conspect1 = Image.new('RGB', (tetrad[0] + 10, tetrad[1] + 10), color="yellow")
+            conspect = Image.open('Images/Temp/low.png').resize(tetrad)
+            conspect1_pix = conspect1.load()
+            conspect_pix = conspect.load()
+            for x in range(tetrad[0]):
+                for y in range(tetrad[1]):
+                    r, g, b = conspect_pix[x, y]
+                    conspect1_pix[x + 5, y + 5] = r, g, b
+            conspect1.save('Images/Temp/out.png')
+        except Exception as e:
+            print(e)
 
 
 def resizePatterns():
