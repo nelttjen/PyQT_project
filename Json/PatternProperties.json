@@ -37,9 +37,9 @@
         "image1": 1,
         "image2": 1,
         "image1XY": [954, 0],
-        "image2XY": [954, 577],
+        "image2XY": [954, 525],
         "image1Size": [966, 503],
-        "image2Size": [966, 503]
+        "image2Size": [966, 555]
     },
     "pattern6": {
         "line1": 1,

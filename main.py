@@ -1,7 +1,7 @@
 import os
 
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDialog, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QPalette, QColor
 from PyQt5 import uic
 
@@ -9,9 +9,10 @@ from PIL import Image, ImageDraw, ImageFont
 import sys
 import shutil
 
-from Pattern.PatternDialog import PatternDialog
+from Dialog.PatternDialog import PatternDialog
 from Utils.Pallite import createPallite
 from Utils.SortPatterns import sortPatterns
+from Utils.Delimiter import text_delimiter
 from Pattern.RegPatterns import registerPatterns
 
 
@@ -49,7 +50,10 @@ class Window(QMainWindow):
         self.btn_pattern.clicked.connect(self.setPattern)
 
         self.btn_preview.clicked.connect(self.updatePreview)
-        self.btn_save.clicked.connect(self.tetrad)
+        # self.btn_save.clicked.connect(self.tetrad)
+
+        self.image1.clicked.connect(self.setImg)
+        self.image2.clicked.connect(self.setImg)
 
     def clearPreview(self):
         self.pixmap = QPixmap('Images/Default/default.png')
@@ -83,6 +87,7 @@ class Window(QMainWindow):
                 else:
                     self.img_pattern = None
             self.updateEdits(self.img_pattern)
+            self.updateImgInfo()
 
             self.img.save('Images/Temp/img_patternTemp.png')
             img_preview = self.img.resize(self.previewSize)
@@ -104,7 +109,7 @@ class Window(QMainWindow):
 
     def recreateImage(self):
         if self.img_pattern:
-            meme = Image.open('Images/Temp/img_patternTemp.png').convert('RGBA')
+            meme = Image.open('Images/Temp/img_patternTemp.png').convert('RGB')
             meme_pixels = meme.load()
             draw = ImageDraw.Draw(meme)
             if self.img_pattern[1][0]:
@@ -112,23 +117,13 @@ class Window(QMainWindow):
                     size = self.img_pattern[1][2]
                     position = self.img_pattern[1][1]
                     text_size = self.img_pattern[1][3]
-                    delimiter = self.img_pattern[1][4]
+                    delim = self.img_pattern[1][4]
                     text = self.lineEdit1.text()
-                    if 0 < delimiter < len(text.split()):
-                        text = text.split()
-                        temp_text = []
-                        tmp_count = 0
-                        for i in range(len(text)):
-                            if tmp_count == delimiter:
-                                tmp_count = 0
-                                temp_text[i - 1] = f'{temp_text[i - 1]}\n'
-                            temp_text.append(text[i])
-                            tmp_count += 1
-                        text = ' '.join(temp_text)
-                        text = text.replace('\n ', '\n')
+                    if 0 < delim < len(text.split()):
+                        text = text_delimiter(text, delim)
                     font = ImageFont.truetype("arial.ttf", text_size)
                     w, h = draw.textsize(text, font=font)
-                    h += 20 * delimiter
+                    h += 20 * delim
                     draw.text((((size[0] - w) / 2) + position[0], ((size[1] - h) / 2) + position[1]),
                               text,
                               fill=(255, 255, 255), font=font,
@@ -140,13 +135,33 @@ class Window(QMainWindow):
                     size = self.img_pattern[2][2]
                     position = self.img_pattern[2][1]
                     text_size = self.img_pattern[2][3]
+                    delim = self.img_pattern[2][4]
                     text = self.lineEdit2.text()
+                    if 0 < delim < len(text.split()):
+                        text = text_delimiter(text, delim)
                     font = ImageFont.truetype("arial.ttf", text_size)
                     w, h = draw.textsize(text, font=font)
+                    h += 20 * delim
                     draw.text((((size[0] - w) / 2) + position[0], ((size[1] - h) / 2) + position[1]),
                               text,
                               fill=(255, 255, 255), font=font,
                               align="center", stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
+                except Exception as e:
+                    print(e.__str__())
+            if self.img_pattern[3][0] and self.img1:
+                try:
+                    size = self.img_pattern[3][2]
+                    position = self.img_pattern[3][1]
+                    self.img1 = self.img1.resize(size)
+                    meme.paste(self.img1, position)
+                except Exception as e:
+                    print(e.__str__())
+            if self.img_pattern[4][0] and self.img2:
+                try:
+                    size = self.img_pattern[4][2]
+                    position = self.img_pattern[4][1]
+                    self.img2 = self.img2.resize(size)
+                    meme.paste(self.img2, position)
                 except Exception as e:
                     print(e.__str__())
             meme.save('Images/Output/output.png')
@@ -183,20 +198,48 @@ class Window(QMainWindow):
         self.image1Info.setText('Картинка 1\nне загружена')
         self.image2Info.setText('Картинка 2\nне загружена')
 
-    def tetrad(self):
+    def setImg(self):
+        if self.img_pattern:
+            if self.sender().text()[-1] == '1' and self.img_pattern[3][0]:
+                self.img1 = self.chooseImage()
+            elif self.sender().text()[-1] == '2':
+                self.img2 = self.chooseImage()
+            self.updateImgInfo()
+        else:
+            self.img1 = None
+            self.img2 = None
+
+    def chooseImage(self):
         try:
-            tetrad = (int(482 * 1.25), int(581 * 1.3))
-            conspect1 = Image.new('RGB', (tetrad[0] + 10, tetrad[1] + 10), color="yellow")
-            conspect = Image.open('Images/Temp/low.png').resize(tetrad)
-            conspect1_pix = conspect1.load()
-            conspect_pix = conspect.load()
-            for x in range(tetrad[0]):
-                for y in range(tetrad[1]):
-                    r, g, b = conspect_pix[x, y]
-                    conspect1_pix[x + 5, y + 5] = r, g, b
-            conspect1.save('Images/Temp/out.png')
+            fname = QFileDialog.getOpenFileName(self, 'Выбрать картинку...', '.', "Image (*.png *.jpg *jpeg)")
+            if fname[0]:
+                fImage = Image.open(fname[0])
+                fImage = fImage.resize((1920, 1080))
+                fImage = fImage.convert('RGB')
+                return fImage
+        except PermissionError:
+            QMessageBox.critical(self, "Ошибка ", "Невозможно открыть файл (Отказано в доступе)", QMessageBox.Ok)
         except Exception as e:
-            print(e)
+            QMessageBox.critical(self, "Ошибка ", "Невозможно открыть файл", QMessageBox.Ok)
+
+    def clearImage(self):
+        self.img1 = None
+        self.img2 = None
+        self.updateImgInfo()
+
+    def updateImgInfo(self):
+        text1 = 'Картинка 1\nзагруженна' if self.img1 else 'Картинка 1\nне загруженна'
+        text2 = 'Картинка 2\nзагруженна' if self.img2 else 'Картинка 2\nне загруженна'
+        self.image1Info.setText(text1)
+        self.image2Info.setText(text2)
+
+        pal = self.image1Info.palette()
+        pal.setColor(QPalette.WindowText, QColor("green" if self.img1 else "red"))
+        self.image1Info.setPalette(pal)
+
+        pal = self.image2Info.palette()
+        pal.setColor(QPalette.WindowText, QColor("green" if self.img2 else "red"))
+        self.image2Info.setPalette(pal)
 
 
 def resizePatterns():
