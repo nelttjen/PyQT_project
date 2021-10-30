@@ -14,7 +14,6 @@ from Utils.Pallite import createPallite
 
 class DoubleClickLabel(QtWidgets.QLabel):
     clicked = QtCore.pyqtSignal()
-
     def mouseDoubleClickEvent(self, event):
         try:
             self.clicked.emit()

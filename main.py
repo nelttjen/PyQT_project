@@ -1,5 +1,5 @@
 import os
-
+from math import sqrt
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDialog, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QPalette, QColor
@@ -8,11 +8,13 @@ from PyQt5 import uic
 from PIL import Image, ImageDraw, ImageFont
 import sys
 import shutil
+import numpy as np
 
 from Dialog.PatternDialog import PatternDialog
 from Utils.Pallite import createPallite
 from Utils.SortPatterns import sortPatterns
 from Utils.Delimiter import text_delimiter
+from Utils.AlphaConverter import convert_image
 from Pattern.RegPatterns import registerPatterns
 
 
@@ -201,25 +203,32 @@ class Window(QMainWindow):
     def setImg(self):
         if self.img_pattern:
             if self.sender().text()[-1] == '1' and self.img_pattern[3][0]:
-                self.img1 = self.chooseImage()
+                self.img1 = self.chooseImage(1)
             elif self.sender().text()[-1] == '2':
-                self.img2 = self.chooseImage()
+                self.img2 = self.chooseImage(2)
             self.updateImgInfo()
         else:
             self.img1 = None
             self.img2 = None
 
-    def chooseImage(self):
+    def chooseImage(self, id):
         try:
             fname = QFileDialog.getOpenFileName(self, 'Выбрать картинку...', '.', "Image (*.png *.jpg *jpeg)")
             if fname[0]:
                 fImage = Image.open(fname[0])
-                fImage = fImage.resize((1920, 1080))
-                fImage = fImage.convert('RGB')
+                print(fImage.mode)
+                if fImage.mode[-1] == 'A':
+                    fImage = fImage.convert('RGBA')
+                    fImage = convert_image(fImage)
                 return fImage
+            elif id == 1:
+                return self.img1
+            elif id == 2:
+                return self.img2
         except PermissionError:
             QMessageBox.critical(self, "Ошибка ", "Невозможно открыть файл (Отказано в доступе)", QMessageBox.Ok)
         except Exception as e:
+            print(e)
             QMessageBox.critical(self, "Ошибка ", "Невозможно открыть файл", QMessageBox.Ok)
 
     def clearImage(self):
