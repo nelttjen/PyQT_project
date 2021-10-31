@@ -1,7 +1,7 @@
 import os
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
-from PyQt5.QtGui import QPixmap, QPalette, QColor
+from PyQt5.QtGui import QPixmap, QPalette, QColor, QIcon
 from PyQt5 import uic
 
 from PIL import Image, ImageDraw, ImageFont
@@ -19,12 +19,13 @@ from Pattern.RegPatterns import registerPatterns
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = 1.0
+        self.VERSION = '1.18'
         self.APP_NAME = 'Meme Generator'
 
         # UI
         uic.loadUi('MainScreen.ui', self)
         self.setWindowTitle(f'{self.APP_NAME} v{self.VERSION}')
+        self.setWindowIcon(QIcon('./Images/Default/logo.jpg'))
         self.setFixedSize(1080, 860)
 
         # DEFAULT VALUES
@@ -32,11 +33,10 @@ class Window(QMainWindow):
         self.val = None
         self.patterns = p_list
         self.img_pattern = None
+        self.flag = False
 
         self.img1 = None
         self.img2 = None
-        self.flag = False
-        self.textSize = 0
 
         self.pixmap = QPixmap('Images/Default/default.png')
         self.img_preview.setPixmap(self.pixmap)
@@ -61,7 +61,8 @@ class Window(QMainWindow):
         self.img_preview.setPixmap(self.pixmap)
         self.img_pattern = None
         self.val = None
-        self.textSize = 0
+        self.flag = False
+        self.clearImage()
         self.updateEdits()
 
     def setPattern(self):
@@ -216,8 +217,7 @@ class Window(QMainWindow):
                 self.img2 = self.chooseImage(2)
             self.updateImgInfo()
         else:
-            self.img1 = None
-            self.img2 = None
+            self.clearImage()
 
     def chooseImage(self, id):
         try:
@@ -242,7 +242,6 @@ class Window(QMainWindow):
     def clearImage(self):
         self.img1 = None
         self.img2 = None
-        self.flag = False
         self.updateImgInfo()
 
     def updateImgInfo(self):
@@ -265,6 +264,8 @@ class Window(QMainWindow):
             options |= QFileDialog.DontUseNativeDialog
             filepath, props = QFileDialog.getSaveFileName(self, 'Сохранить как...', "meme.png",
                                                           "Image (*.png *.jpg *jpeg)")
+            if not filepath:
+                return
             try:
                 shutil.copy2('./Images/Output/output.png', filepath)
             except PermissionError:
