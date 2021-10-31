@@ -18,7 +18,8 @@ def registerPatterns():
             'line1XY', 'line2XY',
             'image1XY', 'image2XY',
             'line1Size', 'line2Size',
-            'image1Size', 'image2Size']
+            'image1Size', 'image2Size',
+            'text1Align', 'text2Align']
     with open('Json/PatternProperties.json', 'r') as jsonFile:
         json_data = json.load(jsonFile)
     for i in filenames:
@@ -42,6 +43,8 @@ def registerPatterns():
                     elif k == 'line1XY' or k == 'line2XY' or k == 'image1XY' or k == 'image2XY' \
                             or k == 'image1Size' or k == 'image2Size' or k == 'line1Size' or k == 'line2Size':
                         temp_data[k] = (0, 0)
+                    elif k == 'text1Align' or k == 'text2Align':
+                        temp_data[k] = 'center'
 
             new_pattern = Pattern(line1=temp_data[keys[0]], line2=temp_data[keys[1]],
                                   image1=temp_data[keys[2]], image2=temp_data[keys[3]],
@@ -51,6 +54,7 @@ def registerPatterns():
                                   image1XY=tuple(temp_data[keys[10]]), image2XY=tuple(temp_data[keys[11]]),
                                   line1Size=tuple(temp_data[keys[12]]), line2Size=tuple(temp_data[keys[13]]),
                                   image1Size=tuple(temp_data[keys[14]]), image2Size=tuple(temp_data[keys[15]]),
+                                  text1Align=temp_data[keys[16]], text2Align=temp_data[keys[17]],
                                   filePath=f'{pathToPatterns}/{i}')
             patterns.append(new_pattern)
     return patterns

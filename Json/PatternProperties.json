@@ -29,9 +29,10 @@
     },
     "pattern4": {
         "line1": 1,
-        "text1Size": 40,
-        "line1XY": [389, 773],
-        "line1Size": [785, 63]
+        "text1Size": 70,
+        "line1XY": [389, 750],
+        "line1Size": [785, 63],
+        "text1Align": "left"
     },
     "pattern5": {
         "image1": 1,

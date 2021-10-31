@@ -1,14 +1,12 @@
 import os
-from math import sqrt
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDialog, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QPalette, QColor
 from PyQt5 import uic
 
 from PIL import Image, ImageDraw, ImageFont
 import sys
 import shutil
-import numpy as np
 
 from Dialog.PatternDialog import PatternDialog
 from Utils.Pallite import createPallite
@@ -37,6 +35,7 @@ class Window(QMainWindow):
 
         self.img1 = None
         self.img2 = None
+        self.flag = False
         self.textSize = 0
 
         self.pixmap = QPixmap('Images/Default/default.png')
@@ -52,7 +51,7 @@ class Window(QMainWindow):
         self.btn_pattern.clicked.connect(self.setPattern)
 
         self.btn_preview.clicked.connect(self.updatePreview)
-        # self.btn_save.clicked.connect(self.tetrad)
+        self.btn_save.clicked.connect(self.saveMeme)
 
         self.image1.clicked.connect(self.setImg)
         self.image2.clicked.connect(self.setImg)
@@ -81,6 +80,7 @@ class Window(QMainWindow):
             # self.img = Image.new(mode='RGB', size=(1920, 1080), color=(0, 60, 0))
             self.val = str(self.val).replace('Images/Patterns/Preview/', '')
             self.img = Image.open(f'Images/Patterns/{self.val}')
+            self.flag = False
             for i in self.patterns:
                 if i.getObject()[0].replace('Images/Patterns/', '').replace('./', '').replace('.png', '') == \
                         self.val.replace('.png', ''):
@@ -106,6 +106,7 @@ class Window(QMainWindow):
 
     def updatePreview(self):
         if self.img_pattern:
+            self.flag = True
             self.recreateImage()
             self.setPixmap()
 
@@ -120,13 +121,20 @@ class Window(QMainWindow):
                     position = self.img_pattern[1][1]
                     text_size = self.img_pattern[1][3]
                     delim = self.img_pattern[1][4]
+                    align = self.img_pattern[1][5]
                     text = self.lineEdit1.text()
                     if 0 < delim < len(text.split()):
                         text = text_delimiter(text, delim)
                     font = ImageFont.truetype("arial.ttf", text_size)
                     w, h = draw.textsize(text, font=font)
                     h += 20 * delim
-                    draw.text((((size[0] - w) / 2) + position[0], ((size[1] - h) / 2) + position[1]),
+                    if align == 'center':
+                        position = (((size[0] - w) / 2) + position[0], ((size[1] - h) / 2) + position[1])
+                    elif align == 'left':
+                        position = (position[0], ((size[1] - h) / 2) + position[1])
+                    elif align == 'right':
+                        position = (position[0] + size[0] - w, ((size[1] - h) / 2) + position[1])
+                    draw.text(position,
                               text,
                               fill=(255, 255, 255), font=font,
                               align="center", stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
@@ -234,6 +242,7 @@ class Window(QMainWindow):
     def clearImage(self):
         self.img1 = None
         self.img2 = None
+        self.flag = False
         self.updateImgInfo()
 
     def updateImgInfo(self):
@@ -249,6 +258,23 @@ class Window(QMainWindow):
         pal = self.image2Info.palette()
         pal.setColor(QPalette.WindowText, QColor("green" if self.img2 else "red"))
         self.image2Info.setPalette(pal)
+
+    def saveMeme(self):
+        if self.flag:
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            filepath, props = QFileDialog.getSaveFileName(self, 'Сохранить как...', "meme.png",
+                                                          "Image (*.png *.jpg *jpeg)")
+            try:
+                shutil.copy2('./Images/Output/output.png', filepath)
+            except PermissionError:
+                QMessageBox.critical(self, "Ошибка ", "Не удалось сохранить файл (Отказано в доступе!)",
+                                     QMessageBox.Ok)
+            except Exception:
+                QMessageBox.critical(self, "Ошибка ", "Не удалось сохранить файл",
+                                     QMessageBox.Ok)
+        else:
+            QMessageBox.critical(self, "Ошибка ", "Вы ничего не изменили в шаблоне!", QMessageBox.Ok)
 
 
 def resizePatterns():
