@@ -19,7 +19,7 @@ from Pattern.RegPatterns import registerPatterns
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.18'
+        self.VERSION = '1.20'
         self.APP_NAME = 'Meme Generator'
 
         # UI
@@ -107,16 +107,15 @@ class Window(QMainWindow):
 
     def updatePreview(self):
         if self.img_pattern:
-            self.flag = True
-            self.recreateImage()
+            self.flag = self.recreateImage()
             self.setPixmap()
 
     def recreateImage(self):
         if self.img_pattern:
             meme = Image.open('Images/Temp/img_patternTemp.png').convert('RGB')
-            meme_pixels = meme.load()
             draw = ImageDraw.Draw(meme)
-            if self.img_pattern[1][0]:
+            flag = False
+            if self.img_pattern[1][0] and self.lineEdit1.text():
                 try:
                     size = self.img_pattern[1][2]
                     position = self.img_pattern[1][1]
@@ -124,6 +123,7 @@ class Window(QMainWindow):
                     delim = self.img_pattern[1][4]
                     align = self.img_pattern[1][5]
                     text = self.lineEdit1.text()
+                    flag = True
                     if 0 < delim < len(text.split()):
                         text = text_delimiter(text, delim)
                     font = ImageFont.truetype("arial.ttf", text_size)
@@ -141,13 +141,14 @@ class Window(QMainWindow):
                               align="center", stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
                 except Exception as e:
                     print(e.__str__())
-            if self.img_pattern[2][0]:
+            if self.img_pattern[2][0] and self.lineEdit2.text():
                 try:
                     size = self.img_pattern[2][2]
                     position = self.img_pattern[2][1]
                     text_size = self.img_pattern[2][3]
                     delim = self.img_pattern[2][4]
                     text = self.lineEdit2.text()
+                    flag = True
                     if 0 < delim < len(text.split()):
                         text = text_delimiter(text, delim)
                     font = ImageFont.truetype("arial.ttf", text_size)
@@ -165,6 +166,7 @@ class Window(QMainWindow):
                     position = self.img_pattern[3][1]
                     self.img1 = self.img1.resize(size)
                     meme.paste(self.img1, position)
+                    flag = True
                 except Exception as e:
                     print(e.__str__())
             if self.img_pattern[4][0] and self.img2:
@@ -173,11 +175,13 @@ class Window(QMainWindow):
                     position = self.img_pattern[4][1]
                     self.img2 = self.img2.resize(size)
                     meme.paste(self.img2, position)
+                    flag = True
                 except Exception as e:
                     print(e.__str__())
             meme.save('Images/Output/output.png')
             img_preview = meme.resize(self.previewSize)
             img_preview.save('Images/Preview/preview.png')
+            return flag
 
     def updateEdits(self, pattern=None):
         if pattern:
@@ -260,8 +264,6 @@ class Window(QMainWindow):
 
     def saveMeme(self):
         if self.flag:
-            options = QFileDialog.Options()
-            options |= QFileDialog.DontUseNativeDialog
             filepath, props = QFileDialog.getSaveFileName(self, 'Сохранить как...', "meme.png",
                                                           "Image (*.png *.jpg *jpeg)")
             if not filepath:

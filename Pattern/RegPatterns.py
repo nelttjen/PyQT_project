@@ -55,6 +55,6 @@ def registerPatterns():
                                   line1Size=tuple(temp_data[keys[12]]), line2Size=tuple(temp_data[keys[13]]),
                                   image1Size=tuple(temp_data[keys[14]]), image2Size=tuple(temp_data[keys[15]]),
                                   text1Align=temp_data[keys[16]], text2Align=temp_data[keys[17]],
-                                  filePath=f'{pathToPatterns}/{i}')
+                                  filePath=f'{pathToPatterns}/{i}', p_type='default')
             patterns.append(new_pattern)
     return patterns
