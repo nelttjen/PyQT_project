@@ -1,4 +1,5 @@
 import os
+import random
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QPalette, QColor, QIcon
@@ -19,11 +20,11 @@ from Pattern.RegPatterns import registerPatterns
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.20'
+        self.VERSION = '1.21'
         self.APP_NAME = 'Meme Generator'
 
         # UI
-        uic.loadUi('MainScreen.ui', self)
+        uic.loadUi('./UI/MainScreen.ui', self)
         self.setWindowTitle(f'{self.APP_NAME} v{self.VERSION}')
         self.setWindowIcon(QIcon('./Images/Default/logo.jpg'))
         self.setFixedSize(1080, 860)
@@ -67,11 +68,11 @@ class Window(QMainWindow):
 
     def setPattern(self):
         try:
-            dialog = PatternDialog(self)
+            dialog = PatternDialog(self, pattern_list=self.patterns)
             palette = createPallite('PatternDialog')
             f.setPalette(palette)
             dialog.show()
-            self.val = dialog.exec_()
+            self.val, self.patterns = dialog.exec_()
         except Exception as e:
             print(e)
         try:

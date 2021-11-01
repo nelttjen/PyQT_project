@@ -8,10 +8,10 @@ class Pattern:
                  image1XY=(0, 0), image2XY=(0, 0),
                  line1Size=(0, 0), line2Size=(0, 0),
                  image1Size=(0, 0), image2Size=(0, 0),
-                 filePath=None, p_type='default'):
+                 filePath=None, default=True):
 
         self.filePath = filePath
-        self.p_type = p_type
+        self.isDefault = default
 
         self.line1 = line1
         self.line2 = line2
@@ -39,6 +39,6 @@ class Pattern:
                 [self.line2, self.line2XY, self.line2Size, self.text2Size, self.text2Delimiter, self.text2Align],
                 [self.image1_exist, self.image1XY, self.image1SSize],
                 [self.image2_exist, self.image2XY, self.image2SSize],
-                self.p_type]
+                self.isDefault]
 
 
