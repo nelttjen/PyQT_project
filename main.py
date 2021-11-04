@@ -1,7 +1,6 @@
 import os
-import random
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QPushButton, QColorDialog
 from PyQt5.QtGui import QPixmap, QPalette, QColor, QIcon
 from PyQt5 import uic
 
@@ -9,24 +8,27 @@ from PIL import Image, ImageDraw, ImageFont
 import sys
 import shutil
 
+from Dialog.AgreementDialog import AgreementDialog
 from Dialog.PatternDialog import PatternDialog
 from Utils.Pallite import createPallite
 from Utils.SortPatterns import sortPatterns
 from Utils.Delimiter import text_delimiter
 from Utils.AlphaConverter import convert_image
+from Utils.ChangeCSV import restoreDefaultCSV, changeColor
 from Pattern.RegPatterns import registerPatterns
 
 
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.21'
+        self.VERSION = '1.23'
         self.APP_NAME = 'Meme Generator'
 
         # UI
         uic.loadUi('./UI/MainScreen.ui', self)
         self.setWindowTitle(f'{self.APP_NAME} v{self.VERSION}')
         self.setWindowIcon(QIcon('./Images/Default/logo.jpg'))
+        self.setObjectName('MainScreen')
         self.setFixedSize(1080, 860)
 
         # DEFAULT VALUES
@@ -43,6 +45,16 @@ class Window(QMainWindow):
         self.img_preview.setPixmap(self.pixmap)
         self.img = Image.open('Images/Default/default.png')
 
+        # color
+        self.btn_color = QPushButton(self)
+        self.btn_color.resize(30, 30)
+
+        self.btn_color_restore = QPushButton(self)
+        self.btn_color_restore.resize(30, 30)
+        self.btn_color_restore.move(30, 0)
+        self.btn_color_restore.setText('D')
+
+
         # Functions
         self.btn_connect()
         self.updateEdits()
@@ -57,6 +69,12 @@ class Window(QMainWindow):
         self.image1.clicked.connect(self.setImg)
         self.image2.clicked.connect(self.setImg)
 
+        self.btn_color.clicked.connect(self.change_color)
+        self.btn_color_restore.clicked.connect(self.restoreDefaultColors)
+
+        color_pixmap = QIcon('./Images/Default/palette.png')
+        self.btn_color.setIcon(color_pixmap)
+
     def clearPreview(self):
         self.pixmap = QPixmap('Images/Default/default.png')
         self.img_preview.setPixmap(self.pixmap)
@@ -69,8 +87,6 @@ class Window(QMainWindow):
     def setPattern(self):
         try:
             dialog = PatternDialog(self, pattern_list=self.patterns)
-            palette = createPallite('PatternDialog')
-            f.setPalette(palette)
             dialog.show()
             self.val, self.patterns = dialog.exec_()
         except Exception as e:
@@ -280,6 +296,25 @@ class Window(QMainWindow):
         else:
             QMessageBox.critical(self, "Ошибка ", "Вы ничего не изменили в шаблоне!", QMessageBox.Ok)
 
+    def change_color(self):
+        color = QColorDialog.getColor()
+        if color.getRgb()[:-1] != (0, 0, 0):
+            self.setColor(color)
+
+    def setColor(self, color):
+        key_id = self.objectName()
+        changeColor(color, key_id)
+        self.changePalette(key_id)
+
+    def restoreDefaultColors(self):
+        sure = AgreementDialog(self, 'Вы действительно хотите\nвостановить значение по умолчанию?').exec_()
+        if sure:
+            key_id = self.objectName()
+            restoreDefaultCSV(key_id, isFullRestore=False)
+            self.changePalette(key_id)
+
+    def changePalette(self, key_id):
+        self.setPalette(createPallite(key_id))
 
 def resizePatterns():
     basePath = './Images/Patterns'

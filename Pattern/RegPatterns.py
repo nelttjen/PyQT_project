@@ -20,7 +20,7 @@ def registerPatterns():
             'line1Size', 'line2Size',
             'image1Size', 'image2Size',
             'text1Align', 'text2Align']
-    with open('Json/PatternProperties.json', 'r') as jsonFile:
+    with open('Data/PatternProperties.json', 'r') as jsonFile:
         json_data = json.load(jsonFile)
     for i in filenames:
         if i.replace('.png', '') in list(json_data.keys()):

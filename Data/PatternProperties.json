@@ -17,11 +17,11 @@
     "pattern3": {
         "line1": 1,
         "text1Size": 160,
-        "line1XY": [405, 812],
+        "line1XY": [280, 812],
         "line1Size": [1415, 118],
         "line2": 1,
         "text2Size": 100,
-        "line2XY": [405, 930],
+        "line2XY": [280, 930],
         "line2Size": [1415, 118],
         "image1": 1,
         "image1XY": [170, 101],

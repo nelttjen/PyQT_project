@@ -1,17 +1,21 @@
-import json
+import csv
 
 from PyQt5.QtGui import QPalette, QColor
 
 
-def loadJson():
-    with open('Json/Background.json', 'r') as background:
-        return json.load(background)
+def loadcsv():
+    with open('Data/Background.csv', 'r') as background:
+        rows = [i for i in csv.reader(background, delimiter=';')]
+        return rows
 
 
 def createPallite(window):
-    DATA = loadJson()
+    DATA = loadcsv()
+    cell = []
+    for i in DATA:
+        if i[0] == window:
+            cell = i
+    r, g, b = (255, 255, 255) if not cell else tuple(map(int, [cell[1], cell[2], cell[3]]))
     f_palette = QPalette()
-    f_palette.setColor(QPalette.Background, (QColor(int(DATA[window]['r']),
-                                                    int(DATA[window]['g']),
-                                                    int(DATA[window]['b']))))
+    f_palette.setColor(QPalette.Background, (QColor(r, g, b)))
     return f_palette

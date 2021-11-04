@@ -1,7 +1,5 @@
-import random
-
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox
+from PyQt5.QtWidgets import QDialog
 from PyQt5 import uic
 
 
@@ -11,9 +9,12 @@ class AgreementDialog(QDialog):
 
         uic.loadUi('./UI/agreement.ui', self)
         self.setWindowTitle('Подтверждение')
-        self.setFixedSize(221, 91)
 
         self.label.setText(text)
+        self.label.move(5, 13)
+        self.label.resize(self.label.sizeHint())
+        self.setFixedSize(self.label.sizeHint().width() + 10, 91)
+        self.buttonBox.move((self.size().width() - self.buttonBox.size().width()) / 2, 61)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 

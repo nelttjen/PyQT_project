@@ -10,7 +10,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PIL import Image
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QPushButton, QColorDialog
 
+from Utils.ChangeCSV import changeColor, restoreDefaultCSV
 from Utils.NameFromPath import getNameFromPath
 from Utils.Pallite import createPallite
 from Dialog.AgreementDialog import AgreementDialog
@@ -35,9 +38,9 @@ class DoubleClickLabel(QtWidgets.QLabel):
 
 class PatternDialog(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, pattern_list=None):
+    def __init__(self, parent=None, pattern_list=None, palette=createPallite('PatternDialog')):
         super(PatternDialog, self).__init__(parent, Qt.WindowCloseButtonHint)
-        self.setObjectName("Dialog")
+        self.setObjectName("PatternDialog")
         self.setWindowTitle('Выбор шаблона')
         self.setFixedSize(923, 750)
         # self.setWindowFlag(Qt., False)
@@ -71,6 +74,18 @@ class PatternDialog(QtWidgets.QDialog):
         self.btn_delete.clicked.connect(self.delete_pattern)
         self.btn_delete.move(863, 710)
 
+        self.color = QPushButton(self)
+        self.color.resize(30, 30)
+        self.color.move(0, 720)
+        self.color.clicked.connect(self.change_color)
+        color_pixmap = QIcon('./Images/Default/palette.png')
+        self.color.setIcon(color_pixmap)
+
+        self.color_restore = QPushButton(self)
+        self.color_restore.resize(30, 30)
+        self.color_restore.move(30, 720)
+        self.color_restore.setText('D')
+        self.color_restore.clicked.connect(self.restoreDefaultColors)
 
         self.scrollArea = QtWidgets.QScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
@@ -80,9 +95,9 @@ class PatternDialog(QtWidgets.QDialog):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.scrollArea.setGeometry(QtCore.QRect(0, 0, 923, 590))
 
-        self.scrollArea.setPalette(createPallite('PatternDialog'))
-        self.scrollAreaWidgetContents.setPalette(createPallite('PatternDialog'))
-        self.setPalette(createPallite('PatternDialog'))
+        self.scrollArea.setPalette(palette)
+        self.scrollAreaWidgetContents.setPalette(palette)
+        self.setPalette(palette)
 
         flag = True
         for j in range(1000):
@@ -188,6 +203,28 @@ class PatternDialog(QtWidgets.QDialog):
     def error_message(self, msg="Не выбран шаблон"):
         QtWidgets.QMessageBox.critical(self, "Ошибка ", msg, QtWidgets.QMessageBox.Ok)
 
+    def change_color(self):
+        color = QColorDialog.getColor()
+        if color.getRgb()[:-1] != (0, 0, 0):
+            self.setColor(color)
+
+    def setColor(self, color):
+        key_id = self.objectName()
+        changeColor(color, key_id)
+        self.changePalette(key_id)
+
+    def restoreDefaultColors(self):
+        sure = AgreementDialog(self, 'Вы действительно хотите\nвостановить значение по умолчанию?').exec_()
+        if sure:
+            key_id = self.objectName()
+            restoreDefaultCSV(key_id, isFullRestore=False)
+            self.changePalette(key_id)
+
+    def changePalette(self, key_id):
+        new_palette = createPallite(key_id)
+        self.scrollArea.setPalette(new_palette)
+        self.scrollAreaWidgetContents.setPalette(new_palette)
+        self.setPalette(new_palette)
 
     def exec_(self):
         super(PatternDialog, self).exec_()
