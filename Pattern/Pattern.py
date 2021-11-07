@@ -1,3 +1,6 @@
+from Utils.Path import get_name_from_path
+
+
 class Pattern:
     def __init__(self, line1=False, line2=False,
                  image1=False, image2=False,
@@ -33,7 +36,7 @@ class Pattern:
         self.image1SSize = image1Size if self.image1_exist else None
         self.image2SSize = image2Size if self.image2_exist else None
 
-    def getObject(self):
+    def get_object(self):
         return [self.filePath,
                 [self.line1, self.line1XY, self.line1Size, self.text1Size, self.text1Delimiter, self.text1Align],
                 [self.line2, self.line2XY, self.line2Size, self.text2Size, self.text2Delimiter, self.text2Align],
@@ -42,3 +45,11 @@ class Pattern:
                 self.isDefault]
 
 
+def find_pattern_by_id(patterns, pattern_id):
+    for i in patterns:
+        if get_name_from_path(i.get_object()[0]) == pattern_id:
+            # Если найдет
+            return i.get_object()
+        else:
+            continue
+    return

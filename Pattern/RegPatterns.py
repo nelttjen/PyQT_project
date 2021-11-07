@@ -1,60 +1,64 @@
-import json
-import os
+import sqlite3
 
 from Pattern.Pattern import Pattern
-from Utils.SortPatterns import sortPatterns
-
-patterns = []
 
 
-def registerPatterns():
-    pathToPatterns = './Images/Patterns'
-    filenames = os.listdir(pathToPatterns)[:-1]
-    filenames = sortPatterns(filenames)
-    keys = ['line1', 'line2',
-            'image1', 'image2',
-            'text1Size', 'text2Size',
-            'text1Delimiter', 'text2Delimiter',
-            'line1XY', 'line2XY',
-            'image1XY', 'image2XY',
-            'line1Size', 'line2Size',
-            'image1Size', 'image2Size',
-            'text1Align', 'text2Align']
-    with open('Data/PatternProperties.json', 'r') as jsonFile:
-        json_data = json.load(jsonFile)
-    for i in filenames:
-        if i.replace('.png', '') in list(json_data.keys()):
-            existKeys = []
-            temp_data = {}
-            for k in keys:
-                if k in list(json_data[i.replace('.png', '')].keys()):
-                    existKeys.append(k)
-            for k in keys:
-                if k in existKeys:
-                    if k == 'line1' or k == 'line2' or k == 'image1' or k == 'image2':
-                        temp_data[k] = True if json_data[i.replace('.png', '')][k] == 1 else False
-                    else:
-                        temp_data[k] = json_data[i.replace('.png', '')][k]
-                else:
-                    if k == 'line1' or k == 'line2' or k == 'image1' or k == 'image2':
-                        temp_data[k] = False
-                    elif k == 'text1Size' or k == 'text2Size' or k == 'text1Delimiter' or k == 'text2Delimiter':
-                        temp_data[k] = 0
-                    elif k == 'line1XY' or k == 'line2XY' or k == 'image1XY' or k == 'image2XY' \
-                            or k == 'image1Size' or k == 'image2Size' or k == 'line1Size' or k == 'line2Size':
-                        temp_data[k] = (0, 0)
-                    elif k == 'text1Align' or k == 'text2Align':
-                        temp_data[k] = 'center'
+def create_default(patterns: list):
+    path = './Images/Patterns'
+    database = sqlite3.connect('./Data/patterns.db')
+    cursor = database.cursor()
+    for i in range(11):
+        res = cursor.execute(f"""SELECT 
+       id,
+       line1,
+       line2,
+       image1,
+       image2,
+       line1Size,
+       line1XY,
+       line1Delimiter,
+       text1Size,
+       text1Align,
+       line2Size,
+       line2XY,
+       line2Delinmiter,
+       text2Size,
+       text2Align,
+       image1Size,
+       image1XY,
+       image2Size,
+       image2XY
+                                FROM p_default
+                                WHERE id == {i + 1}""").fetchone()
+        pattern_id = f'pattern{res[0]}'
+        pattern = Pattern(line1=res[1], line2=res[2],
+                          image1=res[3], image2=res[4],
+                          line1Size=tuple(map(int, res[5].split('x'))) if res[5] else res[5],
+                          line1XY=tuple(map(int, res[6].split('x'))) if res[6] else res[6],
+                          text1Delimiter=res[7] if res[7] else 0,
+                          text1Size=res[8] if res[8] else 0,
+                          text1Align=res[9] if res[9] else 'center',
+                          line2Size=tuple(map(int, res[10].split('x'))) if res[10] else res[10],
+                          line2XY=tuple(map(int, res[11].split('x'))) if res[11] else res[11],
+                          text2Delimiter=res[12] if res[12] else 0,
+                          text2Size=res[13] if res[13] else 0,
+                          text2Align=res[14] if res[14] else 'center',
+                          image1Size=tuple(map(int, res[15].split('x'))) if res[15] else res[15],
+                          image1XY=tuple(map(int, res[16].split('x'))) if res[16] else res[16],
+                          image2Size=tuple(map(int, res[17].split('x'))) if res[17] else res[17],
+                          image2XY=tuple(map(int, res[18].split('x'))) if res[18] else res[18],
+                          filePath=f'{path}/{pattern_id}.png', default=True
+                          )
+        patterns.append(pattern)
+    database.close()
 
-            new_pattern = Pattern(line1=temp_data[keys[0]], line2=temp_data[keys[1]],
-                                  image1=temp_data[keys[2]], image2=temp_data[keys[3]],
-                                  text1Size=temp_data[keys[4]], text2Size=temp_data[keys[5]],
-                                  text1Delimiter=temp_data[keys[6]], text2Delimiter=temp_data[keys[7]],
-                                  line1XY=tuple(temp_data[keys[8]]), line2XY=tuple(temp_data[keys[9]]),
-                                  image1XY=tuple(temp_data[keys[10]]), image2XY=tuple(temp_data[keys[11]]),
-                                  line1Size=tuple(temp_data[keys[12]]), line2Size=tuple(temp_data[keys[13]]),
-                                  image1Size=tuple(temp_data[keys[14]]), image2Size=tuple(temp_data[keys[15]]),
-                                  text1Align=temp_data[keys[16]], text2Align=temp_data[keys[17]],
-                                  filePath=f'{pathToPatterns}/{i}', default=False)
-            patterns.append(new_pattern)
+
+def create_custom(patterns: list):
+    pass
+
+
+def recreate_patterns():
+    patterns = []
+    create_default(patterns)
+    create_custom(patterns)
     return patterns

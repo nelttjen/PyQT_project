@@ -1,30 +1,30 @@
 import csv
 
-from Utils.Pallite import loadcsv
+from Utils.Pallite import load_csv
 
 
-def restoreDefaultCSV(key_id, isFullRestore=False):
-    DEFAULT = [['key_id', 'color_r', 'color_g', 'color_b'],
+def restore_default_csv(key_id, isFullRestore=False):
+    default = [['key_id', 'color_r', 'color_g', 'color_b'],
                ['MainScreen', '229', '228', '226'],
                ['PatternDialog', '220', '220', '220']]
-    DATA = loadcsv()
+    csv_data = load_csv()
     with open('./Data/Background.csv', 'w', newline='') as out:
-        for i, cell in enumerate(DEFAULT):
+        for i, cell in enumerate(default):
             if cell[0] == key_id:
-                DATA[i] = cell
+                csv_data[i] = cell
         write = csv.writer(out, delimiter=';')
         if isFullRestore:
-            write.writerows(DEFAULT)
+            write.writerows(default)
         else:
-            write.writerows(DATA)
+            write.writerows(csv_data)
 
 
-def changeColor(color, key_id):
-    DATA = loadcsv()
+def change_color(color, key_id):
+    csv_data = load_csv()
     r, g, b = tuple(map(str, color.getRgb()[:-1]))
-    for i, cell in enumerate(DATA):
+    for i, cell in enumerate(csv_data):
         if cell[0] == key_id:
-            DATA[i] = [key_id, r, g, b]
+            csv_data[i] = [key_id, r, g, b]
     with open('./Data/Background.csv', 'w', newline='') as back_csv:
         writer = csv.writer(back_csv, delimiter=';')
-        writer.writerows(DATA)
+        writer.writerows(csv_data)
