@@ -17,7 +17,3 @@ class AgreementDialog(QDialog):
         self.buttonBox.move((self.size().width() - self.buttonBox.size().width()) / 2, 61)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-
-
-
-

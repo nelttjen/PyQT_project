@@ -395,10 +395,15 @@ def init_app():
     return recreate_patterns()
 
 
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
 if __name__ == '__main__':
     # создание окна и запуск приложения
     list_patterns = init_app()
     app = QApplication(sys.argv)
+    sys.excepthook = except_hook
     f = Window(list_patterns)
     f.setPalette(create_palette('MainScreen'))
     f.show()

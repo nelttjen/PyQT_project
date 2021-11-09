@@ -17,7 +17,13 @@ from Pattern.Pattern import find_pattern_by_id
 
 from Utils.ChangeCSV import change_color, restore_default_csv
 from Utils.Pallite import create_palette
+
 from Dialog.AgreementDialog import AgreementDialog
+from Dialog.ChangeDialog import ChangeDialog
+
+CREATE = 0
+CHANGE = 1
+CHANGE_DEFAULT = 2
 
 
 class DoubleClickLabel(QtWidgets.QLabel):
@@ -25,20 +31,13 @@ class DoubleClickLabel(QtWidgets.QLabel):
     double_clicked = QtCore.pyqtSignal()
 
     def mousePressEvent(self, event):
-        try:
-            self.single_clicked.emit()
-        except Exception as e:
-            print(e)
+        self.single_clicked.emit()
 
     def mouseDoubleClickEvent(self, event):
-        try:
-            self.double_clicked.emit()
-        except Exception as e:
-            print(e)
+        self.double_clicked.emit()
 
 
 class PatternDialog(QtWidgets.QDialog):
-
     def __init__(self, parent=None, pattern_list=None):
         super(PatternDialog, self).__init__(parent, Qt.WindowCloseButtonHint)
         self.setObjectName("PatternDialog")
@@ -113,7 +112,7 @@ class PatternDialog(QtWidgets.QDialog):
 
         self.btn_create = QtWidgets.QPushButton(self)
         self.btn_create.resize(100, 50)
-        self.btn_create.clicked.connect(self.change_click)
+        self.btn_create.clicked.connect(self.create_click)
         self.btn_create.setText('Создать')
         self.btn_create.move(base + 212, 675)
 
@@ -180,10 +179,16 @@ class PatternDialog(QtWidgets.QDialog):
             self.error_message()
 
     def change_click(self):
-        pass
+        if self.selected:
+            pattern = find_pattern_by_id(self.pattern_list, self.selected)
+            mode = CHANGE_DEFAULT if pattern[5] else CHANGE
+            if mode == 2 and (pattern[1][0] or pattern[2][0]):
+                new_list, has_changes, mode = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
+            else:
+                self.error_message("Этот шаблон изменить нельзя")
 
     def create_click(self):
-        pass
+        new_list, has_changes = ChangeDialog(self, mode=CREATE).exec_()
 
     def delete_pattern(self):
         if not self.selected:
