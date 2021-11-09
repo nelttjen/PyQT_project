@@ -25,7 +25,7 @@ from Utils.Path import get_name_from_path
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.23'
+        self.VERSION = '1.28'
         self.APP_NAME = 'Meme Generator'
 
         # UI
