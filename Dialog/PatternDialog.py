@@ -183,12 +183,13 @@ class PatternDialog(QtWidgets.QDialog):
             pattern = find_pattern_by_id(self.pattern_list, self.selected)
             mode = CHANGE_DEFAULT if pattern[5] else CHANGE
             if mode == 2 and (pattern[1][0] or pattern[2][0]):
-                new_list, has_changes, mode = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
+                new_list, has_changes = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
             else:
                 self.error_message("Этот шаблон изменить нельзя")
 
     def create_click(self):
         new_list, has_changes = ChangeDialog(self, mode=CREATE).exec_()
+        print(new_list, has_changes)
 
     def delete_pattern(self):
         if not self.selected:

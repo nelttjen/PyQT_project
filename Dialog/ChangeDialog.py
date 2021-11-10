@@ -1,7 +1,11 @@
+from PIL import Image
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QFileDialog
+
+from Utils.AlphaConverter import convert_image
 
 CREATE_MODE = 0
 CHANGE_MODE = 1
@@ -9,6 +13,8 @@ DEFAULT_CHANGE_MODE = 2
 
 INFO_SIZE = 'Текущий размер:\n'
 INFO_POSITION = 'Текущее положение:\n'
+
+NEW_PATTERN_PATH = './Images/Temp/new_pattern.png'
 
 
 def format_text(position=(0, 0), size=(0, 0)):
@@ -129,6 +135,14 @@ def get_xy_size(target1, target2):
     return xy, size
 
 
+def none_list(times: int):
+    return [None for _ in range(times)]
+
+
+class PatternError(Exception):
+    pass
+
+
 class ChangeDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, mode=1, pattern=None):
         super(ChangeDialog, self).__init__(parent, Qt.WindowCloseButtonHint)
@@ -142,6 +156,12 @@ class ChangeDialog(QtWidgets.QDialog):
 
         self.new_list = None
         self.has_changes = False
+
+        self.create_text1 = False
+        self.create_text2 = False
+        self.create_image1 = False
+        self.create_image2 = False
+
         if mode in (CHANGE_MODE, DEFAULT_CHANGE_MODE):
             self.path = self.pattern[0]
         else:
@@ -262,51 +282,104 @@ class ChangeDialog(QtWidgets.QDialog):
 
     def connect_buttons(self):
         self.save_button.clicked.connect(self.commit)
+        self.change_pattern.clicked.connect(self.set_new_pattern)
 
         self.create_connect()
 
     def commit(self):
-        print(self.pattern)
         if self.mode == CHANGE_MODE or self.mode == DEFAULT_CHANGE_MODE:
-            new_list = self.create_new_list()
+            new_list, is_crashed = self.create_new_list()
             print(new_list)
             print(self.has_changes)
-            if new_list:
+            if not is_crashed:
+                self.new_list = new_list
+                self.accept()
+        else:
+            new_list, is_crashed = self.create_new_pattern()
+            if not is_crashed:
+                self.new_list = new_list
+                self.has_changes = True
                 self.accept()
 
+    def list_1(self):
+        return self.get_text_list(self.text1_XY_info, self.text1_Size_info,
+                                  self.text1_textSize, self.text1_delimiter,
+                                  self.get_text_aligns(1), 1)
+
+    def list_2(self):
+        return self.get_text_list(self.text2_XY_info, self.text2_Size_info,
+                                  self.text2_textSize, self.text2_delimiter,
+                                  self.get_text_aligns(2), 2)
+
     def create_new_list(self):
+        crash = False
         if self.pattern[1][0]:
-            list_1 = self.get_text_list(self.text1_XY_info, self.text1_Size_info,
-                                        self.text1_textSize, self.text1_delimiter,
-                                        self.get_text_aligns(1), 1)
-            if self.pattern[1] != list_1:
+            list_1, crash = self.list_1()
+            if self.pattern[1] != list_1 and not crash:
                 self.has_changes = True
         else:
-            list_1 = [None for _ in range(6)]
+            list_1 = none_list(6)
         if self.pattern[2][0]:
-            list_2 = self.get_text_list(self.text2_XY_info, self.text2_Size_info,
-                                        self.text2_textSize, self.text2_delimiter,
-                                        self.get_text_aligns(2), 2)
-            if self.pattern[2] != list_2:
+            list_2, crash = self.list_2()
+            if self.pattern[2] != list_2 and not crash:
                 self.has_changes = True
         else:
-            list_2 = [None for _ in range(6)]
+            list_2 = none_list(6)
         if self.pattern[3][0]:
             xy, size = get_xy_size(self.image1_XY_info, self.image1_Size_info)
             list_3 = [1, xy, size]
-            if self.pattern[3] != list_3:
+            if self.pattern[3] != list_3 and not crash:
                 self.has_changes = True
         else:
-            list_3 = [None for _ in range(3)]
+            list_3 = none_list(3)
         if self.pattern[4][0]:
             xy, size = get_xy_size(self.image2_XY_info, self.image2_Size_info)
             list_4 = [1, xy, size]
-            if self.pattern[4] != list_4:
+            if self.pattern[4] != list_4 and not crash:
                 self.has_changes = True
         else:
-            list_4 = [None for _ in range(3)]
-        pack = [self.path, list_1, list_2, list_3, list_4, self.pattern[5]]
-        return pack
+            list_4 = none_list(3)
+
+        # pack Values
+        if self.mode == CHANGE_MODE:
+            pack = [self.path, list_1, list_2, list_3, list_4, False]
+        else:
+            pack = [self.path, list_1, list_2, list_3, list_4, True]
+        return pack, crash
+
+    def create_new_pattern(self):
+        try:
+            crash = False
+            if self.path != NEW_PATTERN_PATH:
+                raise PatternError('Шаблон не загружен')
+            # text1
+            if self.create_text1:
+                list_1, crash = self.list_1()
+            else:
+                list_1 = none_list(6)
+            # text2
+            if self.create_text2:
+                list_2, crash = self.list_2()
+            else:
+                list_2 = none_list(6)
+            # image1
+            if self.create_image1:
+                xy, size = get_xy_size(self.image1_XY_info, self.image1_Size_info)
+                list_3 = [1, xy, size]
+            else:
+                list_3 = none_list(3)
+            # image2
+            if self.create_image2:
+                xy, size = get_xy_size(self.image2_XY_info, self.image2_Size_info)
+                list_4 = [1, xy, size]
+            else:
+                list_4 = none_list(3)
+            pack = [self.path, list_1, list_2, list_3, list_4, False]
+            return pack, crash
+        except PatternError as e:
+            crash = True
+            self.error_message(e.__str__())
+            return None, crash
 
     def get_text_aligns(self, text_id):
         if text_id == 1:
@@ -317,7 +390,8 @@ class ChangeDialog(QtWidgets.QDialog):
     def error_message(self, msg="error"):
         QtWidgets.QMessageBox.critical(self, "Ошибка ", msg, QtWidgets.QMessageBox.Ok)
 
-    def get_text_list(self, target1, target2, target3, target4, target5, text_id):
+    def get_text_list(self, target1, target2, target3, target4, targets5, text_id):
+        crash = False
         enabled = 1
         xy, size = get_xy_size(target1, target2)
         try:
@@ -327,19 +401,21 @@ class ChangeDialog(QtWidgets.QDialog):
         except ValueError:
             self.error_message('Ошибка:\nТекст 1: Размер шрифта\n'
                                'Не может быть текстом или <= 0\nНе может быть больше 300')
-            return
+            crash = True
+            return None, crash
         try:
             delim = int(target4.text())
             if delim < 0:
+                crash = True
                 raise ValueError
         except ValueError:
             self.error_message('Ошибка:\nТекст 1: Слов на строке\nНе может быть текстом или отрицательным числом')
-            return
-        if self.mode == CHANGE_MODE and target5:
-            align = get_align_from_buttons(self.get_text_aligns(1))
+            return None, crash
+        if self.mode in (CHANGE_MODE, CREATE_MODE):
+            align = get_align_from_buttons(targets5)
         else:
             align = self.pattern[text_id][5]
-        return [enabled, xy, size, scale, delim, align]
+        return [enabled, xy, size, scale, delim, align], crash
 
     def create_connect(self):
         self.image1_enable.clicked.connect(self.update_create_fields)
@@ -351,26 +427,45 @@ class ChangeDialog(QtWidgets.QDialog):
         if self.text1_enable.isChecked():
             enable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
                            self.text1_Size, self.text1_XY, self.text1)
+            self.create_text1 = True
         else:
             disable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
                             self.text1_Size, self.text1_XY, self.text1)
+            self.create_text1 = False
         if self.text2_enable.isChecked():
             enable_handler(self.text2_textSize, self.text2_delimiter, self.get_text_aligns(2),
                            self.text2_Size, self.text2_XY, self.text2)
+            self.create_text2 = True
         else:
             disable_handler(self.text2_textSize, self.text2_delimiter, self.get_text_aligns(2),
                             self.text2_Size, self.text2_XY, self.text2)
+            self.create_text2 = False
         if self.image1_enable.isChecked():
             enable_handler(t_XY=self.image1_XY, t_Size=self.image1_Size, t_box=self.image1)
+            self.create_image1 = True
         else:
             disable_handler(t_XY=self.image1_XY, t_Size=self.image1_Size, t_box=self.image1)
+            self.create_image1 = False
         if self.image2_enable.isChecked():
             enable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
+            self.create_image2 = True
         else:
             disable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
+            self.create_image2 = False
+
+    def set_new_pattern(self):
+        f_path = QFileDialog.getOpenFileName(self, 'Выбрать картинку...', '.', "Image (*.png *.jpg *jpeg)")[0]
+        print(f_path)
+        if f_path:
+            pixmap_handler(self.pattern_preview, QPixmap(f_path))
+            new_pattern = Image.open(f_path)
+            if new_pattern.mode[-1] == 'A':
+                new_pattern = convert_image(new_pattern.convert('RGBA'))
+            new_pattern = new_pattern.resize((1920, 1080))
+            new_pattern.save(NEW_PATTERN_PATH)
+            self.path = NEW_PATTERN_PATH
+            self.has_changes = True
 
     def exec_(self):
         super(ChangeDialog, self).exec_()
-        if self.mode in (CHANGE_MODE, DEFAULT_CHANGE_MODE):
-            return self.new_list, self.has_changes, self.mode
         return self.new_list, self.has_changes
