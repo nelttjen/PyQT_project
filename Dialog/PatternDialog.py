@@ -19,7 +19,8 @@ from Pattern.Pattern import find_pattern_by_id
 from Pattern.RegPatterns import recreate_patterns
 
 from Utils.ChangeCSV import change_color, restore_default_csv
-from Utils.DatabaseHandler import change_to_db
+from Utils.DatabaseHandler import change_to_db, remove_pattern_from_db
+from Utils.ImageSilect import image_select
 from Utils.Pallite import create_palette
 from Utils.Path import *
 
@@ -28,15 +29,13 @@ from Dialog.ChangeDialog import ChangeDialog
 
 from Dialog.ChangeDialog import NEW_PATTERN_PATH
 
-CREATE = 0
-CHANGE = 1
-CHANGE_DEFAULT = 2
+from Utils.Values import CREATE, CHANGE, CHANGE_DEFAULT, DEFAULT_PATTERNS_COUNT
 
 
-def copy_new_pattern(props_list):
-    pattern_name = f'pattern{props_list[6]}.png'
-    path = './Images/Patterns/Custom/' + pattern_name
-    preview_path = f'./Images/Patterns/Custom/Preview/' + pattern_name
+def copy_new_pattern(pattern_id):
+    pattern_name = f'pattern{int(pattern_id)}.png'
+    path = './Images/Patterns/' + pattern_name
+    preview_path = f'./Images/Patterns/Preview/' + pattern_name
     preview = Image.open(NEW_PATTERN_PATH)
     preview = preview.resize((284, 190))
 
@@ -66,7 +65,6 @@ class PatternDialog(QtWidgets.QDialog):
 
         # default
         self.returnVal = None
-        self.pattern_changed = False
         self.pattern_list = pattern_list
         self.viewed_patterns = []
         self.selected = None
@@ -89,6 +87,7 @@ class PatternDialog(QtWidgets.QDialog):
         self.view_patterns = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.scrollArea.setGeometry(QtCore.QRect(0, 0, 923, 590))
+        self.view_patterns.setColumnMinimumWidth(2, 0)
 
         self.change_palette(self.objectName())
 
@@ -136,54 +135,37 @@ class PatternDialog(QtWidgets.QDialog):
         self.color_restore.setText('D')
         self.color_restore.clicked.connect(self.default_color)
 
-    def reg_pattern_view(self):
-        offset_i = 0
-        offset_j = 0
-        for j in range(175):
-            for i in range(3):
-                if j * 3 + i < len(self.pattern_list):
-                    cur_pattern = self.pattern_list[j * 3 + i].get_object()
-                    default = cur_pattern[5]
-                    if default:
-                        p_name = f'd_pattern{(j * 3 + i + 1)}'
-                        path = f'Images/Patterns/Preview/{p_name[2:]}.png'
-                    else:
-                        p_name = f'c_pattern{get_clean_id(cur_pattern[0])}'
-                        path = f'Images/Patterns/Custom/Preview/{p_name[2:]}.png'
-                    if os.path.exists(path):
-                        pixmap = QtGui.QPixmap(path)
-                        label = DoubleClickLabel()
-                        label.setPixmap(pixmap)
-                        label.setObjectName(p_name)
-                        label.single_clicked.connect(self.select)
-                        label.double_clicked.connect(self.double_click)
-                        self.view_patterns.addWidget(label, j - offset_j, i - offset_i)
-                        self.viewed_patterns.append([label, path, p_name])
-                else:
-                    break
-                    # try:
-                    #     path = f'Images/Patterns/Preview/pattern{(j * 3 + i) + 1}.png'
-                    #     try:
-                    #         open(path)
-                    #     except IOError as e:
-                    #         flag = False
-                    #         print(e.__str__())
-                    #         break
-                    #     if flag:
-                    #         pixmap = QtGui.QPixmap(path)
-                    #         label = DoubleClickLabel()
-                    #         label.setPixmap(pixmap)
-                    #         label.setObjectName(f"pattern{(j * 3 + i) + 1}")
-                    #         label.single_clicked.connect(self.select)
-                    #         label.double_clicked.connect(self.double_click)
-                    #         self.view_patterns.addWidget(label, j, i)
-                    #
-                    #         self.viewed_patterns.append([label, path, (j * 3 + i) + 1])
-                    # except Exception as e:
-                    #     print(e)
+    def add_widget(self, pattern, x, y):
+        p_name = get_name_from_path(pattern[0])
+        path = f'./Images/Patterns/Preview/{p_name}.png'
+        if os.path.exists(path):
+            pixmap = QtGui.QPixmap(path)
+            label = DoubleClickLabel()
+            label.setPixmap(pixmap)
+            label.setObjectName(p_name)
+            label.single_clicked.connect(self.select)
+            label.double_clicked.connect(self.double_click)
+            self.view_patterns.addWidget(label, x, y)
+            self.viewed_patterns.append([label, path, p_name])
 
-    def add_pattern_view(self, object_name):
-        pass
+    def reg_pattern_view(self):
+        for j in range(175):
+            if j < len(self.pattern_list):
+                x = j // 3
+                y = j % 3
+                cur_pattern = self.pattern_list[j].get_object()
+                self.add_widget(cur_pattern, x, y)
+            else:
+                break
+
+    def clear_pattern_view(self):
+        for i in self.viewed_patterns:
+            self.view_patterns.removeWidget(i[0])
+        self.viewed_patterns = []
+
+    def update_pattern_view(self):
+        self.clear_pattern_view()
+        self.reg_pattern_view()
 
     def double_click(self):
         try:
@@ -197,30 +179,33 @@ class PatternDialog(QtWidgets.QDialog):
 
     def update_picture(self, pattern_id):
         for i in self.viewed_patterns:
-            if i[2] == pattern_id:
-                pixmap = QtGui.QPixmap(f'./Images/Patterns/Preview/pattern{pattern_id}.png')
+            if get_clean_id(i[2]) == str(pattern_id):
+                path = f'./Images/Patterns/Preview/pattern{pattern_id}.png'
+                pixmap = QtGui.QPixmap(path)
                 i[0].setPixmap(pixmap)
+                break
 
     def select(self):
         try:
             last = self.selected
             p_name = self.sender().objectName()
+            if not p_name:
+                p_name = last
             if last:
                 self.update_picture(int(last.replace('pattern', '')))
-            p_img = Image.open(f'./Images/Patterns/Preview/{p_name}.png')
-            background = Image.new(mode='RGB', size=(p_img.size[0] + 10, p_img.size[1] + 10), color='yellow')
-            background.paste(p_img, (5, 5))
-            selected = background.resize(p_img.size)
-            selected.save('./Images/Temp/select.png')
+            image_select(p_name)
             pixmap = QtGui.QPixmap('./Images/Temp/select.png')
-            self.sender().setPixmap(pixmap)
+            if self.sender().objectName():
+                self.sender().setPixmap(pixmap)
+            else:
+                self.find_label_by_name(p_name).setPixmap(pixmap)
             self.selected = p_name
         except Exception as e:
             print(e)
 
     def select_click(self):
         if self.selected:
-            self.returnVal = '{}.png'.format(self.selected)
+            self.returnVal = self.selected
             self.accept()
         else:
             self.error_message()
@@ -230,28 +215,31 @@ class PatternDialog(QtWidgets.QDialog):
             pattern = find_pattern_by_id(self.pattern_list, self.selected)
             mode = CHANGE_DEFAULT if pattern[5] else CHANGE
             if mode == CHANGE_DEFAULT and (pattern[1][0] or pattern[2][0]):
-                new_list, has_changes = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
-            else:
-                new_list, has_changes = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
-            if has_changes:
-                if not self.pattern_changed:
-                    self.pattern_changed = True
-                change_to_db(new_list)
-                self.pattern_list = recreate_patterns()
+                new_list, has_changes, has_img_changes = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
+            elif mode == CHANGE:
+                new_list, has_changes, has_img_changes = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
             else:
                 self.error_message("Этот шаблон изменить нельзя")
+                return
+            if has_changes:
+                change_to_db(new_list)
+                self.pattern_list = recreate_patterns()
+            if has_img_changes:
+                pattern_id = int(get_clean_id(pattern[0]))
+                copy_new_pattern(pattern_id)
+                self.select()
         else:
             self.error_message()
 
     def create_click(self):
-        new_list, has_changes = ChangeDialog(self, mode=CREATE).exec_()
+        new_list, has_changes, has_img_changes = ChangeDialog(self, mode=CREATE).exec_()
         print(new_list)
         if has_changes:
             if os.path.exists(NEW_PATTERN_PATH):
                 change_to_db(new_list)
                 self.pattern_list = recreate_patterns()
-                copy_new_pattern(new_list)
-                self.add_pattern_view()
+                copy_new_pattern(new_list[6] + DEFAULT_PATTERNS_COUNT)
+                self.update_pattern_view()
             else:
                 self.error_message('При создании шаблона что-то пошло не так')
 
@@ -269,13 +257,20 @@ class PatternDialog(QtWidgets.QDialog):
                     agreement = AgreementDialog(self,
                                                 'Вы действительно хотите\n удалить этот шаблон?').exec_()
                     if agreement:
-                        self.delete_script(pattern[0])
+                        self.delete_script(get_clean_id(pattern[0]))
         except Exception as e:
             print(e)
 
     def delete_script(self, pattern_id):
-        print('delete script here')
-
+        remove_pattern_from_db(pattern_id)
+        self.pattern_list = recreate_patterns()
+        try:
+            os.remove(f'./Images/Patterns/Preview/pattern{pattern_id}.png')
+            os.remove(f'./Images/Patterns/pattern{pattern_id}.png')
+        except FileNotFoundError:
+            pass
+        self.update_pattern_view()
+        self.selected = None
 
     def error_message(self, msg="Не выбран шаблон"):
         QtWidgets.QMessageBox.critical(self, "Ошибка ", msg, QtWidgets.QMessageBox.Ok)
@@ -303,6 +298,12 @@ class PatternDialog(QtWidgets.QDialog):
         self.scrollAreaWidgetContents.setPalette(new_palette)
         self.setPalette(new_palette)
 
+    def find_label_by_name(self, pattern_name):
+        for i in self.viewed_patterns:
+            if i[2] == pattern_name:
+                return i[0]
+
     def exec_(self):
         super(PatternDialog, self).exec_()
+        print(self.returnVal)
         return self.returnVal, self.pattern_list

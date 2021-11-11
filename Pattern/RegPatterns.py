@@ -1,12 +1,12 @@
 import sqlite3
 
 from Pattern.Pattern import Pattern
+from Utils.Values import DEFAULT_PATTERNS_COUNT
 
 
 def reg_new_pattern(res: list, isDefault=True):
-    path = './Images/Patterns' if isDefault else './Images/Patterns/Custom'
-    pattern_id = f'pattern{res[0]}'
-    print(res)
+    path = './Images/Patterns'
+    pattern_id = f'pattern{res[0] if isDefault else res[0] + DEFAULT_PATTERNS_COUNT}'
     pattern = Pattern(line1=res[1], line2=res[2],
                       image1=res[3], image2=res[4],
                       line1Size=tuple(map(int, res[5].split('x'))) if res[5] else res[5],

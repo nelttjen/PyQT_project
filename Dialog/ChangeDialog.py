@@ -5,17 +5,15 @@ from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog
 
+from Dialog.Size_XY_Dialog import Size_XY_Dialog
 from Utils.AlphaConverter import convert_image
 from Utils.Free_ID import get_free_id
 
-CREATE_MODE = 0
-CHANGE_MODE = 1
-DEFAULT_CHANGE_MODE = 2
+from Utils.Values import CREATE as CREATE_MODE
+from Utils.Values import CHANGE as CHANGE_MODE
+from Utils.Values import CHANGE_DEFAULT as DEFAULT_CHANGE_MODE
 
-INFO_SIZE = 'Текущий размер:\n'
-INFO_POSITION = 'Текущее положение:\n'
-
-NEW_PATTERN_PATH = './Images/Temp/new_pattern.png'
+from Utils.Values import INFO_SIZE, INFO_POSITION, NEW_PATTERN_PATH
 
 
 def format_text(position=(0, 0), size=(0, 0)):
@@ -157,6 +155,7 @@ class ChangeDialog(QtWidgets.QDialog):
 
         self.new_list = None
         self.has_changes = False
+        self.has_image_changed = False
 
         self.create_text1 = False
         self.create_text2 = False
@@ -285,6 +284,14 @@ class ChangeDialog(QtWidgets.QDialog):
         self.save_button.clicked.connect(self.commit)
         self.change_pattern.clicked.connect(self.set_new_pattern)
 
+        pattern = {1: 'text1_Size', 2: 'text1_XY',
+                   3: 'text2_Size', 4: 'text2_XY',
+                   5: 'image1_Size', 6: 'image1_XY',
+                   7: 'image2_Size', 8: 'image2_XY'
+                   }
+        for i, val in enumerate(self.get_connects()):
+            val[0].clicked.connect(self.set_value)
+            val[0].setObjectName(pattern[i + 1])
         self.create_connect()
 
     def commit(self):
@@ -465,8 +472,38 @@ class ChangeDialog(QtWidgets.QDialog):
             new_pattern = new_pattern.resize((1920, 1080))
             new_pattern.save(NEW_PATTERN_PATH)
             self.path = NEW_PATTERN_PATH
-            self.has_changes = True
+            if self.mode != CREATE_MODE:
+                self.has_image_changed = [True, self.pattern[0]]
+
+    def get_connects(self):
+        connects = [[self.text1_Size, self.text1_Size_info],
+                    [self.text1_XY, self.text1_XY_info],
+                    [self.text2_Size, self.text2_Size_info],
+                    [self.text2_XY, self.text2_XY_info],
+                    [self.image1_Size, self.image1_Size_info],
+                    [self.image1_XY, self.image1_XY_info],
+                    [self.image2_Size, self.image2_Size_info],
+                    [self.image2_XY, self.image2_XY_info]]
+        return connects
+
+    def set_value(self):
+        connects = self.get_connects()
+        for i, cell in enumerate(connects):
+            if cell[0].objectName() == self.sender().objectName():
+                name = cell[0].objectName()
+                if name in ('text1_Size', 'text2_Size', 'image1_Size', 'image2_Size'):
+                    val1, val2 = cell[1].text().replace(INFO_SIZE, '').split('x')
+                    val3, val4 = connects[i + 1][1].text().replace(INFO_POSITION, '') \
+                        .replace('X: ', '').replace('Y:', '').split(', ')
+                    new_val1, new_val2 = Size_XY_Dialog(self, val1, val2, val3, val4).exec_()
+                    cell[1].setText(f'{INFO_SIZE}{new_val1}x{new_val2}')
+                else:
+                    val1, val2 = cell[1].text().replace(INFO_POSITION, '')\
+                        .replace('X: ', '').replace('Y:', '').split(', ')
+                    val3, val4 = connects[i - 1][1].text().replace(INFO_SIZE, '').split('x')
+                    new_val1, new_val2 = Size_XY_Dialog(self, val1, val2, val3, val4).exec_()
+                    cell[1].setText(f'{INFO_POSITION}X: {new_val1}, Y: {new_val2}')
 
     def exec_(self):
         super(ChangeDialog, self).exec_()
-        return self.new_list, self.has_changes
+        return self.new_list, self.has_changes, self.has_image_changed

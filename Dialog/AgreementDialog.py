@@ -11,9 +11,9 @@ class AgreementDialog(QDialog):
         self.setWindowTitle('Подтверждение')
 
         self.label.setText(text)
-        self.label.move(5, 13)
+        self.label.move(20, 13)
         self.label.resize(self.label.sizeHint())
-        self.setFixedSize(self.label.sizeHint().width() + 10, 91)
+        self.setFixedSize(self.label.sizeHint().width() + 40, 91)
         self.buttonBox.move((self.size().width() - self.buttonBox.size().width()) / 2, 61)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)

@@ -17,11 +17,12 @@ from Pattern.Pattern import find_pattern_by_id
 from Pattern.RegPatterns import recreate_patterns
 
 from Utils.Pallite import create_palette
-from Utils.SortPatterns import sort_patterns
 from Utils.Delimiter import text_delimiter
 from Utils.AlphaConverter import convert_image
 from Utils.ChangeCSV import restore_default_csv, change_color
 from Utils.Path import get_name_from_path
+
+from Utils.Values import GRID_PATTERN_SIZE
 
 
 class Window(QMainWindow):
@@ -86,31 +87,28 @@ class Window(QMainWindow):
 
     def set_pattern(self):
         # Вызов диалога выбора шаблонов
-        try:
-            dialog = PatternDialog(self, pattern_list=self.patterns)
-            dialog.show()
-            # получение данных
-            pattern_id, self.patterns = dialog.exec_()
-            if not pattern_id:
-                # Если просто закрыли окно
-                return
-            pattern_id = get_name_from_path(pattern_id)
-            # Поиск выбранного шаблона
-            self.img_pattern = find_pattern_by_id(self.patterns, pattern_id)
-            # обновляет поля под новый шаблон
-            self.update_edits(self.img_pattern)
-            self.update_img_info()
 
-            # сохранение редактируемого шаблона и картинки для показа в приложении
-            img = Image.open(f'Images/Patterns/{pattern_id}.png')
-            img.save('Images/Temp/img_patternTemp.png')
-            img_preview = img.resize(self.previewSize)
-            img_preview.save('Images/Preview/preview.png')
-            self.update_pixmap()
-            print(self.img_pattern)
-        except Exception as e:
-            self.clear_all()
-            print(e)
+        dialog = PatternDialog(self, pattern_list=self.patterns)
+        dialog.show()
+        # получение данных
+        pattern_id, self.patterns = dialog.exec_()
+        if not pattern_id:
+            # Если просто закрыли окно
+            return
+        pattern_id = get_name_from_path(pattern_id)
+        # Поиск выбранного шаблона
+        self.img_pattern = find_pattern_by_id(self.patterns, pattern_id)
+        # обновляет поля под новый шаблон
+        self.update_edits(self.img_pattern)
+        self.update_img_info()
+
+        # сохранение редактируемого шаблона и картинки для показа в приложении
+        img = Image.open(f'Images/Patterns/{pattern_id}.png')
+        img.save('Images/Temp/img_patternTemp.png')
+        img_preview = img.resize(self.previewSize)
+        img_preview.save('Images/Preview/preview.png')
+        self.update_pixmap()
+        print(self.img_pattern)
 
     def update_pixmap(self, path='Images/Preview/preview.png'):
         # Меняет картинку на главном экране
@@ -358,8 +356,8 @@ def hide_folder():
 
 def resize_patterns():
     # проверка основных картинок на соответствие размеру
-    base_path = './Images/Patterns/Custom'
-    objects = sort_patterns(os.listdir(base_path)[-1])
+    base_path = './Images/Patterns'
+    objects = os.listdir(base_path)[-1]
     for i in objects:
         try:
             temp_img = Image.open(f'{base_path}/{i}')
@@ -369,13 +367,13 @@ def resize_patterns():
         except FileNotFoundError:
             continue
     # Проверка preview картинок на соответствие размеру
-    base_path = './Images/Patterns/Custom/Preview'
-    objects = sort_patterns(os.listdir(base_path))
+    base_path = './Images/Patterns/Preview'
+    objects = os.listdir(base_path)
     for i in objects:
         try:
             temp_img = Image.open(f'{base_path}/{i}')
-            if temp_img.size != (284, 190):
-                temp_img = temp_img.resize((284, 190))
+            if temp_img.size != GRID_PATTERN_SIZE:
+                temp_img = temp_img.resize(GRID_PATTERN_SIZE)
                 temp_img.save(f'{base_path}/{i}')
         except FileNotFoundError:
             continue
@@ -383,10 +381,8 @@ def resize_patterns():
 
 def check_preview_patterns():
     # Проверка наличия preview изображений
-    previews = os.listdir('./Images/Patterns/Custom/Preview')
-    patterns = os.listdir('./Images/Patterns/Custom')[-1]
-    previews = sort_patterns(previews)
-    patterns = sort_patterns(patterns)
+    previews = os.listdir('./Images/Patterns/Preview')
+    patterns = os.listdir('./Images/Patterns/')
     if len(previews) != len(patterns):
         for i in patterns:
             if i not in previews:
@@ -397,9 +393,8 @@ def check_preview_patterns():
 
 
 def init_app():
-    # подготовка перед запуском приложения
-    # check_preview_patterns()
-    # resize_patterns()
+    check_preview_patterns()
+    resize_patterns()
     hide_folder()
     return recreate_patterns()
 

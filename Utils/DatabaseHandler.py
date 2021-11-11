@@ -1,17 +1,18 @@
 from Utils.Path import *
 import sqlite3
 
-from Dialog.ChangeDialog import NEW_PATTERN_PATH
+from Utils.Values import NEW_PATTERN_PATH, DEFAULT_PATTERNS_COUNT
 
 
 def change_to_db(pattern: list):
     database = sqlite3.connect('./Data/patterns.db')
     cursor = database.cursor()
-
+    offset = 0 if pattern[5] else DEFAULT_PATTERNS_COUNT
     if pattern[0] != NEW_PATTERN_PATH:
-        p_id = get_clean_id(pattern[0])
+        p_id = int(get_clean_id(pattern[0])) - offset
     else:
         p_id = pattern[6]
+
     text1_enabled, text1_xy, text1_size, text1_text_size, text1_delimiter, text1_align = pattern[1]
     text2_enabled, text2_xy, text2_size, text2_text_size, text2_delimiter, text2_align = pattern[2]
     image1_enabled, image1_xy, image1_size = pattern[3]
@@ -40,6 +41,36 @@ def change_to_db(pattern: list):
     image2XY = {f'"{image2_xy[0]}x{image2_xy[1]}"' if image2_xy else 'NULL'}
     WHERE id = {p_id}
     '''
+    cursor.execute(res)
+    database.commit()
+    database.close()
+
+
+def remove_pattern_from_db(p_id):
+    database = sqlite3.connect('./Data/patterns.db')
+    cursor = database.cursor()
+    res = f"""UPDATE p_custom
+    SET isUsed = 0,
+    line1 = NULL,
+    line2 = NULL,
+    image1 = NULL,
+    image2 = NULL,
+    line1Size = NULL,
+    line1XY = NULL,
+    line1Delimiter = NULL,
+    text1Size = NULL,
+    text1Align = NULL,
+    line2Size = NULL,
+    line2XY = NULL,
+    line2Delimiter = NULL,
+    text2Size = NULL,
+    text2Align = NULL,
+    image1Size = NULL,
+    image1XY = NULL,
+    image2Size = NULL,
+    image2XY = NULL
+    WHERE id = {int(p_id) - DEFAULT_PATTERNS_COUNT}
+    """
     cursor.execute(res)
     database.commit()
     database.close()
