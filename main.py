@@ -7,8 +7,6 @@ from PyQt5 import uic
 from PIL import Image, ImageDraw, ImageFont
 import sys
 import shutil
-import win32api
-import win32con
 
 from Dialog.AgreementDialog import AgreementDialog
 from Dialog.PatternDialog import PatternDialog
@@ -348,12 +346,6 @@ def get_position(size, position, w, h, align='center'):
     return position
 
 
-def hide_folder():
-    folders = ['./Images/Patterns', './Images/Temp', './Images/Default']
-    for i in folders:
-        win32api.SetFileAttributes(i, win32con.FILE_ATTRIBUTE_HIDDEN)
-
-
 def resize_patterns():
     # проверка основных картинок на соответствие размеру
     base_path = './Images/Patterns'
@@ -395,7 +387,6 @@ def check_preview_patterns():
 def init_app():
     check_preview_patterns()
     resize_patterns()
-    hide_folder()
     return recreate_patterns()
 
 
