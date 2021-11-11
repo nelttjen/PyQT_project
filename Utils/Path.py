@@ -1,5 +1,6 @@
 def get_name_from_path(path):
-    return path.replace('./', '').replace('Images/Patterns/', '').replace('Preview/', '').replace('.png', '')
+    return path.replace('./', '').replace('Images/Patterns/', '')\
+        .replace('Custom/', '').replace('Preview/', '').replace('.png', '')
 
 
 def get_path_to_pattern(pattern_id):

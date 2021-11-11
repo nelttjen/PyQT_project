@@ -7,6 +7,8 @@ from PyQt5 import uic
 from PIL import Image, ImageDraw, ImageFont
 import sys
 import shutil
+import win32api
+import win32con
 
 from Dialog.AgreementDialog import AgreementDialog
 from Dialog.PatternDialog import PatternDialog
@@ -348,10 +350,16 @@ def get_position(size, position, w, h, align='center'):
     return position
 
 
+def hide_folder():
+    folders = ['./Images/Patterns', './Images/Temp', './Images/Default']
+    for i in folders:
+        win32api.SetFileAttributes(i, win32con.FILE_ATTRIBUTE_HIDDEN)
+
+
 def resize_patterns():
     # проверка основных картинок на соответствие размеру
-    base_path = './Images/Patterns'
-    objects = sort_patterns(os.listdir(base_path)[:-1])
+    base_path = './Images/Patterns/Custom'
+    objects = sort_patterns(os.listdir(base_path)[-1])
     for i in objects:
         try:
             temp_img = Image.open(f'{base_path}/{i}')
@@ -361,7 +369,7 @@ def resize_patterns():
         except FileNotFoundError:
             continue
     # Проверка preview картинок на соответствие размеру
-    base_path = './Images/Patterns/Preview'
+    base_path = './Images/Patterns/Custom/Preview'
     objects = sort_patterns(os.listdir(base_path))
     for i in objects:
         try:
@@ -375,8 +383,8 @@ def resize_patterns():
 
 def check_preview_patterns():
     # Проверка наличия preview изображений
-    previews = os.listdir('./Images/Patterns/Preview')
-    patterns = os.listdir('./Images/Patterns')[:-1]
+    previews = os.listdir('./Images/Patterns/Custom/Preview')
+    patterns = os.listdir('./Images/Patterns/Custom')[-1]
     previews = sort_patterns(previews)
     patterns = sort_patterns(patterns)
     if len(previews) != len(patterns):
@@ -390,8 +398,9 @@ def check_preview_patterns():
 
 def init_app():
     # подготовка перед запуском приложения
-    check_preview_patterns()
-    resize_patterns()
+    # check_preview_patterns()
+    # resize_patterns()
+    hide_folder()
     return recreate_patterns()
 
 

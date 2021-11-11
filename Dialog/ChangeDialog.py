@@ -6,6 +6,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog
 
 from Utils.AlphaConverter import convert_image
+from Utils.Free_ID import get_free_id
 
 CREATE_MODE = 0
 CHANGE_MODE = 1
@@ -289,8 +290,6 @@ class ChangeDialog(QtWidgets.QDialog):
     def commit(self):
         if self.mode == CHANGE_MODE or self.mode == DEFAULT_CHANGE_MODE:
             new_list, is_crashed = self.create_new_list()
-            print(new_list)
-            print(self.has_changes)
             if not is_crashed:
                 self.new_list = new_list
                 self.accept()
@@ -353,6 +352,8 @@ class ChangeDialog(QtWidgets.QDialog):
             if self.path != NEW_PATTERN_PATH:
                 raise PatternError('Шаблон не загружен')
             # text1
+            if not any([self.create_text1, self.create_text2, self.create_image1, self.create_image2]):
+                raise PatternError('Выберите, что должно находится на шаблоне')
             if self.create_text1:
                 list_1, crash = self.list_1()
             else:
@@ -374,7 +375,7 @@ class ChangeDialog(QtWidgets.QDialog):
                 list_4 = [1, xy, size]
             else:
                 list_4 = none_list(3)
-            pack = [self.path, list_1, list_2, list_3, list_4, False]
+            pack = [self.path, list_1, list_2, list_3, list_4, False, get_free_id()]
             return pack, crash
         except PatternError as e:
             crash = True

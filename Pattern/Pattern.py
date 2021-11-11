@@ -11,7 +11,7 @@ class Pattern:
                  image1XY=(0, 0), image2XY=(0, 0),
                  line1Size=(0, 0), line2Size=(0, 0),
                  image1Size=(0, 0), image2Size=(0, 0),
-                 filePath=None, default=True):
+                 filePath=None, default=True, custom_id=0):
 
         self.filePath = filePath
         self.isDefault = default
@@ -45,11 +45,21 @@ class Pattern:
                 self.isDefault]
 
 
-def find_pattern_by_id(patterns, pattern_id):
-    for i in patterns:
-        if get_name_from_path(i.get_object()[0]) == pattern_id:
-            # Если найдет
-            return i.get_object()
-        else:
-            continue
+def find_pattern_by_id(patterns, pattern_id, p_type=True):
+    if p_type:
+        for i in patterns[:11]:
+            current = i.get_object()
+            if get_name_from_path(current[0]) == pattern_id:
+                # Если найдет
+                return i.get_object()
+            else:
+                continue
+    else:
+        for i in patterns[12:]:
+            current = i.get_object()
+            if get_name_from_path(current[0]) == pattern_id:
+                # Если найдет
+                return i.get_object()
+            else:
+                continue
     return
