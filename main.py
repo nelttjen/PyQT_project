@@ -66,17 +66,19 @@ class Window(QMainWindow):
     def btn_connect(self):
         self.btn_clear.clicked.connect(self.clear_all)
         self.btn_pattern.clicked.connect(self.set_pattern)
-
         self.btn_preview.clicked.connect(self.update_preview)
         self.btn_save.clicked.connect(self.save_meme)
         self.clip.clicked.connect(self.copy_co_clipboard)
 
-        self.image1.clicked.connect(self.set_img)
-        self.image2.clicked.connect(self.set_img)
+        self.set_images_connect()
         self.clear_images.clicked.connect(self.clear_image)
-
         self.btn_color.clicked.connect(self.change_color)
         self.btn_color_restore.clicked.connect(self.default_color)
+
+    def set_images_connect(self):
+        images = [self.image1, self.image2]
+        for i in images:
+            i.clicked.connect(self.set_img)
 
     def set_pattern(self):
         # Вызов диалога выбора шаблонов

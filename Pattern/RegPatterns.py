@@ -23,39 +23,42 @@ def reg_new_pattern(res: list, isDefault=True):
                       image1XY=tuple(map(int, res[16].split('x'))) if res[16] else res[16],
                       image2Size=tuple(map(int, res[17].split('x'))) if res[17] else res[17],
                       image2XY=tuple(map(int, res[18].split('x'))) if res[18] else res[18],
-                      filePath=f'{path}/{pattern_id}.png', default=isDefault
-                      )
+                      filePath=f'{path}/{pattern_id}.png', default=isDefault)
     return pattern
 
 
 def create_default(patterns: list):
     database = sqlite3.connect('./Data/patterns.db')
     cursor = database.cursor()
-    for i in range(11):
-        res = cursor.execute(f"""SELECT *
-                                FROM p_default
-                                WHERE id == {i + 1}""").fetchone()
-        pattern = reg_new_pattern(res, True)
-        patterns.append(pattern)
-    database.close()
+    try:
+        for i in range(11):
+            res = cursor.execute(f"""SELECT *
+                                    FROM p_default
+                                    WHERE id == {i + 1}""").fetchone()
+            pattern = reg_new_pattern(res, True)
+            patterns.append(pattern)
+    finally:
+        database.close()
 
 
 def create_custom(patterns: list):
     database = sqlite3.connect('./Data/patterns.db')
     cursor = database.cursor()
-    res = f"""SELECT *
-            FROM p_custom
-            WHERE isUsed = 1
-        """
-    result = cursor.execute(res).fetchall()
-    for i in range(len(result)):
-        res_list = list(result[i])
-        del res_list[1]
-        result[i] = res_list
-    for i in range(len(result)):
-        pattern = reg_new_pattern(result[i], False)
-        patterns.append(pattern)
-    database.close()
+    try:
+        res = f"""SELECT *
+                FROM p_custom
+                WHERE isUsed = 1
+            """
+        result = cursor.execute(res).fetchall()
+        for i in range(len(result)):
+            res_list = list(result[i])
+            del res_list[1]
+            result[i] = res_list
+        for i in range(len(result)):
+            pattern = reg_new_pattern(result[i], False)
+            patterns.append(pattern)
+    finally:
+        database.close()
 
 
 def recreate_patterns():
