@@ -134,8 +134,7 @@ class BoxDialog(QDialog):
         scaled_values = (self.values[0] * offs_x, self.values[1] * offs_y,
                          self.values[2] * offs_x, self.values[3] * offs_y)
         self.draw_rect_on_image(scaled_values)
-        if self.values != (0, 0, 1, 1):
-            self.update_picture()
+        self.update_picture()
         self.clicks = 0
         self.pos1 = None
         self.pos2 = None

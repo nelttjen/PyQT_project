@@ -73,6 +73,7 @@ class Window(QMainWindow):
 
         self.image1.clicked.connect(self.set_img)
         self.image2.clicked.connect(self.set_img)
+        self.clear_images.clicked.connect(self.clear_image)
 
         self.btn_color.clicked.connect(self.change_color)
         self.btn_color_restore.clicked.connect(self.default_color)
@@ -178,6 +179,7 @@ class Window(QMainWindow):
             self.image1Info.show() if pattern[3][0] else self.image1Info.hide()
             self.image2.show() if pattern[4][0] else self.image2.hide()
             self.image2Info.show() if pattern[4][0] else self.image2Info.hide()
+            self.clear_images.show() if pattern[3][0] or pattern[4][0] else self.clear_images.hide()
 
             self.flag = False
         else:
