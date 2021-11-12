@@ -11,7 +11,6 @@ from PyQt5.QtGui import QPixmap, QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QPushButton, QColorDialog
 
 from Dialog.AgreementDialog import AgreementDialog
-from Dialog.BoxDialog import BoxDialog
 from Dialog.PatternDialog import PatternDialog
 from Pattern.Pattern import find_pattern_by_id
 from Pattern.RegPatterns import recreate_patterns
@@ -27,7 +26,7 @@ from Utils.Values import GRID_PATTERN_SIZE, OUTPUT_PATH, PREVIEW_PATH
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.35'
+        self.VERSION = '1.38'
         self.APP_NAME = 'Meme Generator'
 
         # UI
