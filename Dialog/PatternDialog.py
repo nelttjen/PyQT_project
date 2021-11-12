@@ -42,7 +42,8 @@ def copy_new_pattern(pattern_id):
     os.remove(NEW_PATTERN_PATH)
 
 
-class DoubleClickLabel(QtWidgets.QLabel):
+# Лейбл для регистраций кликов по нему
+class QClickLabel(QtWidgets.QLabel):
     single_clicked = QtCore.pyqtSignal()
     double_clicked = QtCore.pyqtSignal()
 
@@ -73,10 +74,12 @@ class PatternDialog(QtWidgets.QDialog):
         self.btn_delete = None
         self.reg_buttons()
 
+        # color buttons
         self.color = None
         self.color_restore = None
         self.reg_color_buttons()
 
+        # Создание Grid поля для отображения
         self.scrollArea = QtWidgets.QScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
@@ -84,14 +87,21 @@ class PatternDialog(QtWidgets.QDialog):
         self.view_patterns = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.scrollArea.setGeometry(QtCore.QRect(0, 0, 923, 590))
+
+        # По 3 изображения на строке
         self.view_patterns.setColumnMinimumWidth(2, 0)
 
+        # Изменение бекграунд цвета
         self.change_palette(self.objectName())
 
+        # Добавление превью картинок в Grid поле
         self.reg_pattern_view()
 
     def reg_buttons(self):
+        # базовое значение по x от края приложения, сделал для удобства
         base = 293
+
+        # Регисрация основных кнопок
         self.btn_select = QtWidgets.QPushButton(self)
         self.btn_select.resize(100, 50)
         self.btn_select.clicked.connect(self.select_click)
@@ -112,13 +122,14 @@ class PatternDialog(QtWidgets.QDialog):
 
         self.btn_delete = QtWidgets.QPushButton(self)
         self.btn_delete.resize(40, 40)
-        self.btn_delete.clicked.connect(self.delete_pattern)
+        self.btn_delete.clicked.connect(self.delete_click)
         self.btn_delete.move(883, 710)
         delete_icon = QIcon('./Images/Default/trashcan.jpg')
         self.btn_delete.setIcon(delete_icon)
         self.btn_delete.setIconSize(QSize(34, 34))
 
     def reg_color_buttons(self):
+        # Регистрация кнопок для цвета бекграунда
         self.color = QPushButton(self)
         self.color.resize(30, 30)
         self.color.move(0, 720)
@@ -132,49 +143,85 @@ class PatternDialog(QtWidgets.QDialog):
         self.color_restore.setText('D')
         self.color_restore.clicked.connect(self.default_color)
 
-    def add_widget(self, pattern, x, y):
-        p_name = get_name_from_path(pattern[0])
-        path = f'./Images/Patterns/Preview/{p_name}.png'
-        if os.path.exists(path):
-            pixmap = QtGui.QPixmap(path)
-            label = DoubleClickLabel()
-            label.setPixmap(pixmap)
-            label.setObjectName(p_name)
-            label.single_clicked.connect(self.select)
-            label.double_clicked.connect(self.double_click)
-            self.view_patterns.addWidget(label, x, y)
-            self.viewed_patterns.append([label, path, p_name])
-
     def reg_pattern_view(self):
-        for j in range(511):
+        # рег картинок
+        for j in range(500 + DEFAULT_PATTERNS_COUNT):
             if j < len(self.pattern_list):
                 x = j // 3
                 y = j % 3
                 cur_pattern = self.pattern_list[j].get_object()
-                self.add_widget(cur_pattern, x, y)
+                if not self.add_widget(cur_pattern, x, y):
+                    # если вернуло что какая-то кастом картинка удалена - прервать
+                    break
             else:
                 break
 
     def clear_pattern_view(self):
+        # удалить все существующие виджеты и очистить их
         for i in self.viewed_patterns:
             self.view_patterns.removeWidget(i[0])
         self.viewed_patterns = []
 
     def update_pattern_view(self):
+        # Удалить и заного зарегать все картинки
         self.clear_pattern_view()
         self.reg_pattern_view()
 
-    def double_click(self):
+    def add_widget(self, pattern, x, y):
+        # Добавление картинки в Grid полы
+        p_name = get_name_from_path(pattern[0])
+        preview_path = f'./Images/Patterns/Preview/{p_name}.png'
+        pattern_path = f'./Images/Patterns/{p_name}.png'
+        if os.path.exists(preview_path) and os.path.exists(pattern_path):
+            pixmap = QtGui.QPixmap(preview_path)
+            label = QClickLabel()
+            label.setPixmap(pixmap)
+            label.setObjectName(p_name)
+            label.single_clicked.connect(self.select)
+            label.double_clicked.connect(self.double_click)
+            self.view_patterns.addWidget(label, x, y)
+            self.viewed_patterns.append([label, preview_path, p_name])
+            return True
+        elif int(get_clean_id(p_name)) > DEFAULT_PATTERNS_COUNT:
+            # На случай если кастом картинку удалили - удалить данные с бд
+            self.delete_script(get_clean_id(p_name))
+            # И опять зарегать все картинки сначала
+            self.update_pattern_view()
+            return False
+        # Ну если удалили дефолт картинку - тут уже ниче не поделаешь, переустанавливайте :p
+        return True
+
+    def select(self):
+        # Также вызывается при сингл клике по лейблу
         try:
-            for i in self.viewed_patterns:
-                if self.sender() == i[0]:
-                    self.returnVal = i[1]
-                    self.accept()
+            # записываем последнюю выбранную картинку
+            last = self.selected
+            # записываем новый id картинки
+            p_name = self.sender().objectName()
+            if not p_name:
+                # если было получено с изменения или создания -
+                # оставить селект на прошлой картинке
+                p_name = last
+            if last:
+                # сетнуть ласт картинке норм вид
+                self.update_picture(int(last.replace('pattern', '')))
+            # создать и сохранить картинку с рамкой
+            image_select(p_name)
+            pixmap = QtGui.QPixmap('./Images/Temp/select.png')
+            if self.sender().objectName():
+                # если картинка не была получена с изменения или создания
+                self.sender().setPixmap(pixmap)
+            else:
+                # иначе найти лейбл по имени и изменить картинку
+                self.find_label_by_name(p_name).setPixmap(pixmap)
+            # ну и записать pattern_name как селект
+            self.selected = p_name
         except Exception as e:
-            print(e)
-            self.reject()
+            # вдруг что-то пойдет не так
+            print(e.__str__())
 
     def update_picture(self, pattern_id):
+        # поиск и восстановление картинки нужного лейбла, id = чистый
         for i in self.viewed_patterns:
             if get_clean_id(i[2]) == str(pattern_id):
                 path = f'./Images/Patterns/Preview/pattern{pattern_id}.png'
@@ -182,65 +229,76 @@ class PatternDialog(QtWidgets.QDialog):
                 i[0].setPixmap(pixmap)
                 break
 
-    def select(self):
-        try:
-            last = self.selected
-            p_name = self.sender().objectName()
-            if not p_name:
-                p_name = last
-            if last:
-                self.update_picture(int(last.replace('pattern', '')))
-            image_select(p_name)
-            pixmap = QtGui.QPixmap('./Images/Temp/select.png')
-            if self.sender().objectName():
-                self.sender().setPixmap(pixmap)
-            else:
-                self.find_label_by_name(p_name).setPixmap(pixmap)
-            self.selected = p_name
-        except Exception as e:
-            print(e)
+    def find_label_by_name(self, pattern_name):
+        # поиск лейбла по имени, имя - pattern_name
+        for i in self.viewed_patterns:
+            if i[2] == pattern_name:
+                return i[0]
+
+    def double_click(self):
+        # Действие при дабл клике по лейблу
+        for i in self.viewed_patterns:
+            if self.sender() == i[0]:
+                self.returnVal = i[1]
+                self.accept()
 
     def select_click(self):
+        # кнопка выбрать
         if self.selected:
             self.returnVal = self.selected
             self.accept()
         else:
+            # шаблон не выбран
             self.error_message()
 
     def change_click(self):
+        # кнопка изменить
         if self.selected:
+            # найти иизменяемый шаблон
             pattern = find_pattern_by_id(self.pattern_list, self.selected)
             mode = CHANGE_DEFAULT if pattern[5] else CHANGE
-            if mode == CHANGE_DEFAULT and (pattern[1][0] or pattern[2][0]):
-                new_list, has_changes, has_img_changes = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
-            elif mode == CHANGE:
+            # если дефолт - картинки не изменяется
+            # поэтому открываем только есть у дефолта есть текст
+            if mode == CHANGE or (mode == CHANGE_DEFAULT and (pattern[1][0] or pattern[2][0])):
                 new_list, has_changes, has_img_changes = ChangeDialog(self, pattern=pattern, mode=mode).exec_()
             else:
+                # если выбранный шаблон = дефолтный и только с картинками
                 self.error_message("Этот шаблон изменить нельзя")
                 return
             if has_changes:
+                # если окошко не закрыли просто так
                 change_to_db(new_list)
+                # обновить шаблоны с новыми данными
                 self.pattern_list = recreate_patterns()
             if has_img_changes:
+                # если меняли картинку
                 pattern_id = int(get_clean_id(pattern[0]))
+                # скопировать её и опять выбрать
                 copy_new_pattern(pattern_id)
                 self.select()
         else:
+            # не выбран шаблон
             self.error_message()
 
     def create_click(self):
         new_list, has_changes, has_img_changes = ChangeDialog(self, mode=CREATE).exec_()
-        print(new_list)
+        # если окно не закрыли
         if has_changes:
+            # проверка, не удалили ли новый шаблон с темп папки
             if os.path.exists(NEW_PATTERN_PATH):
+                # скрипт создания шаблона
                 change_to_db(new_list)
-                self.pattern_list = recreate_patterns()
                 copy_new_pattern(new_list[6] + DEFAULT_PATTERNS_COUNT)
+                # ну и обновление всех данных в окне
+                self.pattern_list = recreate_patterns()
                 self.update_pattern_view()
+                self.select()
             else:
+                # new_pattern.png был удален
                 self.error_message('При создании шаблона что-то пошло не так')
 
-    def delete_pattern(self):
+    def delete_click(self):
+        # кнопка удалить
         if not self.selected:
             self.error_message()
             return
@@ -248,30 +306,36 @@ class PatternDialog(QtWidgets.QDialog):
             pattern = find_pattern_by_id(self.pattern_list, self.selected)
             if pattern:
                 if pattern[5]:
+                    # если дефолт шаблон
                     self.error_message('Этот шаблон является базовым и не может быть удалён')
                     return
                 else:
+                    # спрашиваем дополнительное подтверждение
                     agreement = AgreementDialog(self,
                                                 'Вы действительно хотите\n удалить этот шаблон?').exec_()
                     if agreement:
+                        # если согласны - удалить
                         self.delete_script(get_clean_id(pattern[0]))
         except Exception as e:
-            print(e)
+            # есть что-то пошло не так - ничего не делать
+            print(e.__str__())
 
     def delete_script(self, pattern_id):
+        # удаляем с бд
         remove_pattern_from_db(pattern_id)
+
+        # удаляем картинки
+        path1 = f'./Images/Patterns/pattern{pattern_id}.png'
+        path2 = f'./Images/Patterns/Preview/pattern{pattern_id}.png'
+        os.remove(path1) if os.path.exists(path1) else None
+        os.remove(path2) if os.path.exists(path2) else None
+
+        # обновляем данные
         self.pattern_list = recreate_patterns()
-        try:
-            os.remove(f'./Images/Patterns/Preview/pattern{pattern_id}.png')
-            os.remove(f'./Images/Patterns/pattern{pattern_id}.png')
-        except FileNotFoundError:
-            pass
         self.update_pattern_view()
         self.selected = None
 
-    def error_message(self, msg="Не выбран шаблон"):
-        QtWidgets.QMessageBox.critical(self, "Ошибка ", msg, QtWidgets.QMessageBox.Ok)
-
+    # 2 кнопки с цветом
     def change_color(self):
         color = QColorDialog.getColor()
         if color.isValid():
@@ -289,18 +353,18 @@ class PatternDialog(QtWidgets.QDialog):
             restore_default_csv(key_id, isFullRestore=False)
             self.change_palette(key_id)
 
+    # изменение бекграунда
     def change_palette(self, key_id):
         new_palette = create_palette(key_id)
         self.scrollArea.setPalette(new_palette)
         self.scrollAreaWidgetContents.setPalette(new_palette)
         self.setPalette(new_palette)
 
-    def find_label_by_name(self, pattern_name):
-        for i in self.viewed_patterns:
-            if i[2] == pattern_name:
-                return i[0]
+    def error_message(self, msg="Не выбран шаблон"):
+        # чтоб кучу раз не выззывать message box
+        QtWidgets.QMessageBox.critical(self, "Ошибка ", msg, QtWidgets.QMessageBox.Ok)
 
+    # возвращение значений с окна
     def exec_(self):
         super(PatternDialog, self).exec_()
-        print(self.returnVal)
         return self.returnVal, self.pattern_list

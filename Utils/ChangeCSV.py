@@ -1,21 +1,19 @@
 import csv
 
 from Utils.Pallite import load_csv
+from Utils.Values import CSV_DEFAULT
 
 
 def restore_default_csv(key_id, isFullRestore=False):
-    default = [['key_id', 'color_r', 'color_g', 'color_b'],
-               ['MainScreen', '229', '228', '226'],
-               ['PatternDialog', '220', '220', '220']]
     csv_data = load_csv()
     with open('./Data/Background.csv', 'w', newline='') as out:
         try:
-            for i, cell in enumerate(default):
+            for i, cell in enumerate(CSV_DEFAULT):
                 if cell[0] == key_id:
                     csv_data[i] = cell
             write = csv.writer(out, delimiter=';')
             if isFullRestore:
-                write.writerows(default)
+                write.writerows(CSV_DEFAULT)
             else:
                 write.writerows(csv_data)
         finally:

@@ -10,3 +10,7 @@ GRID_PATTERN_SIZE: tuple = (284, 190)
 OUTPUT_PATH: str = './Images/Output/output.png'
 PREVIEW_PATH: str = './Images/Preview/preview.png'
 PREVIEW_SIZE: tuple = (854, 540)
+
+CSV_DEFAULT: list = [['key_id', 'color_r', 'color_g', 'color_b'],
+                    ['MainScreen', '229', '228', '226'],
+                    ['PatternDialog', '220', '220', '220']]

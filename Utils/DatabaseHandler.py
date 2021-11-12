@@ -45,6 +45,7 @@ def change_to_db(pattern: list):
         cursor.execute(res)
         database.commit()
     finally:
+        # в любом случае закроем коннект к базе
         database.close()
 
 
@@ -52,7 +53,8 @@ def remove_pattern_from_db(p_id):
     database = sqlite3.connect('./Data/patterns.db')
     cursor = database.cursor()
     try:
-        res = f"""UPDATE p_custom
+        res = f'''
+        UPDATE p_custom
         SET isUsed = 0,
         line1 = NULL,
         line2 = NULL,
@@ -73,8 +75,9 @@ def remove_pattern_from_db(p_id):
         image2Size = NULL,
         image2XY = NULL
         WHERE id = {int(p_id) - DEFAULT_PATTERNS_COUNT}
-        """
+        '''
         cursor.execute(res)
         database.commit()
     finally:
+        # в любом случае закроем коннект к базе
         database.close()

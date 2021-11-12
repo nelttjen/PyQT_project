@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 
+
 from io import BytesIO
 from win32clipboard import CF_DIB
 from PIL import Image, ImageDraw, ImageFont
@@ -10,6 +11,7 @@ from PyQt5.QtGui import QPixmap, QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QPushButton, QColorDialog
 
 from Dialog.AgreementDialog import AgreementDialog
+from Dialog.BoxDialog import BoxDialog
 from Dialog.PatternDialog import PatternDialog
 from Pattern.Pattern import find_pattern_by_id
 from Pattern.RegPatterns import recreate_patterns

@@ -1,9 +1,8 @@
 from PIL import Image
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QDialog, QMessageBox
+from PyQt5 import uic
 
 from Dialog.Size_XY_Dialog import Size_XY_Dialog
 from Utils.AlphaConverter import convert_image
@@ -12,7 +11,6 @@ from Utils.Free_ID import get_free_id
 from Utils.Values import CREATE as CREATE_MODE
 from Utils.Values import CHANGE as CHANGE_MODE
 from Utils.Values import CHANGE_DEFAULT as DEFAULT_CHANGE_MODE
-
 from Utils.Values import INFO_SIZE, INFO_POSITION, NEW_PATTERN_PATH
 
 
@@ -23,14 +21,12 @@ def format_text(position=(0, 0), size=(0, 0)):
 
 
 def pixmap_handler(target, pixmap):
+    # сетит картинку для показа снизу
     pixmap = pixmap.scaled(target.size())
     target.setPixmap(pixmap)
 
 
-def disable_pixmap(target):
-    target.setEnabled(False)
-
-
+# сетит переданную информацию о text1 и text2
 def text_handler(t_textSize=None, t_Delimiter=None, t_Align=None, t_XY=None, t_Size=None,
                  textSize=1, textDelimiter=0, text_XY=(0, 0), text_Size=(1, 1)):
     t_textSize.setText(str(textSize)) if t_textSize else None
@@ -41,12 +37,14 @@ def text_handler(t_textSize=None, t_Delimiter=None, t_Align=None, t_XY=None, t_S
     t_Size.setText(size_text) if t_Size else None
 
 
+# сетит переданную информацию об image1 и image2
 def image_handler(t_XY=None, t_Size=None, image_XY=(0, 0), image_size=(1, 1)):
     position_image, size_image = format_text(image_XY, image_size)
     t_XY.setText(position_image) if t_XY else None
     t_Size.setText(size_image) if t_Size else None
 
 
+# возвращает кнопку со списка кнопок алигна по строке
 def get_align_from_str(variants, str_align):
     # variants pattern:
     # left, center, right
@@ -59,6 +57,7 @@ def get_align_from_str(variants, str_align):
     return variants[1]
 
 
+# возвращает кнопку со списка кнопок алигна по isChecked
 def get_align_from_buttons(buttons):
     for i, button in enumerate(buttons):
         if button.isChecked():
@@ -70,16 +69,19 @@ def get_align_from_buttons(buttons):
                 return 'right'
 
 
+# возвращает нужные значения о тексте в нужном порядке
 def get_text_props(props_list):
     # textSize, delimiter, position, size
     return props_list[3], props_list[4], props_list[1], props_list[2]
 
 
+# возвращает нужные значения о картинке в нужном порядке
 def get_image_props(props_list):
     # position, size
     return props_list[1], props_list[2]
 
 
+# отключает переданные в функцию виджеты
 def disable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None, t_Size=None, t_box=None):
     if t_textSize:
         t_textSize.setReadOnly(True)
@@ -95,9 +97,11 @@ def disable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None,
     if t_Size:
         t_Size.setEnabled(False)
     if t_box:
+        # на случай если (Отключено) уже добавлялось
         t_box.setTitle(t_box.title().replace(' (Отключено)', '') + ' (Отключено)')
 
 
+# включает переданные в функцию виджеты
 def enable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None, t_Size=None, t_box=None):
     if t_textSize:
         t_textSize.setReadOnly(False)
@@ -118,6 +122,7 @@ def enable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None, 
         t_box.setTitle(t_box.title().replace(' (Отключено)', ''))
 
 
+# Изменяет заголовок окна в зависимости от режима
 def window_title(mode):
     if mode == CREATE_MODE:
         return 'Создание шаблона'
@@ -127,6 +132,7 @@ def window_title(mode):
         return 'Редактирование базового шаблона'
 
 
+# извлекает значения xy и size из лейблов
 def get_xy_size(target1, target2):
     xy = tuple(map(int, target1.text().replace('X: ', '').replace('Y: ', '')
                    .replace('Текущее положение:\n', '').split(', ')))
@@ -134,15 +140,16 @@ def get_xy_size(target1, target2):
     return xy, size
 
 
+# лист из None
 def none_list(times: int):
-    return [None for _ in range(times)]
+    return [None] * times
 
 
 class PatternError(Exception):
     pass
 
 
-class ChangeDialog(QtWidgets.QDialog):
+class ChangeDialog(QDialog):
     def __init__(self, parent=None, mode=1, pattern=None):
         super(ChangeDialog, self).__init__(parent, Qt.WindowCloseButtonHint)
         uic.loadUi('./UI/change.ui', self)
@@ -153,6 +160,7 @@ class ChangeDialog(QtWidgets.QDialog):
         self.pattern = pattern
         self.mode = mode
 
+        # Defaults
         self.new_list = None
         self.has_changes = False
         self.has_image_changed = False
@@ -162,13 +170,14 @@ class ChangeDialog(QtWidgets.QDialog):
         self.create_image1 = False
         self.create_image2 = False
 
+        # Путь к картинке
         if mode in (CHANGE_MODE, DEFAULT_CHANGE_MODE):
             self.path = self.pattern[0]
         else:
             self.path = './Images/Default/default.png'
 
+        # Functions
         self.prepare_ui()
-
         self.connect_buttons()
 
     def prepare_ui(self):
@@ -278,23 +287,24 @@ class ChangeDialog(QtWidgets.QDialog):
         disable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
         pixmap = QPixmap(self.path)
         pixmap_handler(self.pattern_preview, pixmap)
-        disable_pixmap(self.change_pattern)
+        self.change_pattern.setEnabled(False)
 
     def connect_buttons(self):
         self.save_button.clicked.connect(self.commit)
         self.change_pattern.clicked.connect(self.set_new_pattern)
 
-        pattern = {1: 'text1_Size', 2: 'text1_XY',
-                   3: 'text2_Size', 4: 'text2_XY',
-                   5: 'image1_Size', 6: 'image1_XY',
-                   7: 'image2_Size', 8: 'image2_XY'
-                   }
+        # для иззменения значений XY и Size
+        button_pattern = {1: 'text1_Size', 2: 'text1_XY',
+                          3: 'text2_Size', 4: 'text2_XY',
+                          5: 'image1_Size', 6: 'image1_XY',
+                          7: 'image2_Size', 8: 'image2_XY'}
         for i, val in enumerate(self.get_connects()):
             val[0].clicked.connect(self.set_value)
-            val[0].setObjectName(pattern[i + 1])
+            val[0].setObjectName(button_pattern[i + 1])
         self.create_connect()
 
     def commit(self):
+        # Кнопка применить
         if self.mode == CHANGE_MODE or self.mode == DEFAULT_CHANGE_MODE:
             new_list, is_crashed = self.create_new_list()
             if not is_crashed:
@@ -318,6 +328,7 @@ class ChangeDialog(QtWidgets.QDialog):
                                   self.get_text_aligns(2), 2)
 
     def create_new_list(self):
+        # создание списка, похожего на список класса Pattern
         crash = False
         if self.pattern[1][0]:
             list_1, crash = self.list_1()
@@ -346,7 +357,7 @@ class ChangeDialog(QtWidgets.QDialog):
         else:
             list_4 = none_list(3)
 
-        # pack Values
+        # упаковка списка
         if self.mode == CHANGE_MODE:
             pack = [self.path, list_1, list_2, list_3, list_4, False]
         else:
@@ -356,11 +367,13 @@ class ChangeDialog(QtWidgets.QDialog):
     def create_new_pattern(self):
         try:
             crash = False
+            # если картинка ещё не загружена (при загрузке path = new_pattern_path)
             if self.path != NEW_PATTERN_PATH:
                 raise PatternError('Шаблон не загружен')
-            # text1
+            # Если нет галочек в настройках создания
             if not any([self.create_text1, self.create_text2, self.create_image1, self.create_image2]):
                 raise PatternError('Выберите, что должно находится на шаблоне')
+            # text1
             if self.create_text1:
                 list_1, crash = self.list_1()
             else:
@@ -390,15 +403,18 @@ class ChangeDialog(QtWidgets.QDialog):
             return None, crash
 
     def get_text_aligns(self, text_id):
+        # Возвращает список RadioButton, соответсвующих нужному тексту
         if text_id == 1:
             return [self.text1_align_left, self.text1_align_center, self.text1_align_right]
         if text_id == 2:
             return [self.text2_align_left, self.text2_align_center, self.text2_align_right]
 
     def error_message(self, msg="error"):
-        QtWidgets.QMessageBox.critical(self, "Ошибка ", msg, QtWidgets.QMessageBox.Ok)
+        # очередной error_message
+        QMessageBox.critical(self, "Ошибка ", msg, QMessageBox.Ok)
 
     def get_text_list(self, target1, target2, target3, target4, targets5, text_id):
+        # Получает все значения с выбранного текст бокса
         crash = False
         enabled = 1
         xy, size = get_xy_size(target1, target2)
@@ -417,7 +433,8 @@ class ChangeDialog(QtWidgets.QDialog):
                 crash = True
                 raise ValueError
         except ValueError:
-            self.error_message('Ошибка:\nТекст 1: Слов на строке\nНе может быть текстом или отрицательным числом')
+            self.error_message('Ошибка:\nТекст 1: Слов на строке\n'
+                               'Не может быть текстом или отрицательным числом')
             return None, crash
         if self.mode in (CHANGE_MODE, CREATE_MODE):
             align = get_align_from_buttons(targets5)
@@ -426,12 +443,14 @@ class ChangeDialog(QtWidgets.QDialog):
         return [enabled, xy, size, scale, delim, align], crash
 
     def create_connect(self):
+        # чекбоксы в режиме создания
         self.image1_enable.clicked.connect(self.update_create_fields)
         self.image2_enable.clicked.connect(self.update_create_fields)
         self.text1_enable.clicked.connect(self.update_create_fields)
         self.text2_enable.clicked.connect(self.update_create_fields)
 
     def update_create_fields(self):
+        # включает/выключает поля в режиме создания
         if self.text1_enable.isChecked():
             enable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
                            self.text1_Size, self.text1_XY, self.text1)
@@ -462,8 +481,8 @@ class ChangeDialog(QtWidgets.QDialog):
             self.create_image2 = False
 
     def set_new_pattern(self):
+        # обновляет картинку шаблона
         f_path = QFileDialog.getOpenFileName(self, 'Выбрать картинку...', '.', "Image (*.png *.jpg *jpeg)")[0]
-        print(f_path)
         if f_path:
             pixmap_handler(self.pattern_preview, QPixmap(f_path))
             new_pattern = Image.open(f_path)
@@ -476,6 +495,7 @@ class ChangeDialog(QtWidgets.QDialog):
                 self.has_image_changed = [True, self.pattern[0]]
 
     def get_connects(self):
+        # для изменения XY и Size
         connects = [[self.text1_Size, self.text1_Size_info],
                     [self.text1_XY, self.text1_XY_info],
                     [self.text2_Size, self.text2_Size_info],
@@ -487,6 +507,7 @@ class ChangeDialog(QtWidgets.QDialog):
         return connects
 
     def set_value(self):
+        # вызывает окно редактирования выбранного XY и Size
         connects = self.get_connects()
         for i, cell in enumerate(connects):
             if cell[0].objectName() == self.sender().objectName():
@@ -498,12 +519,13 @@ class ChangeDialog(QtWidgets.QDialog):
                     new_val1, new_val2 = Size_XY_Dialog(self, val1, val2, val3, val4).exec_()
                     cell[1].setText(f'{INFO_SIZE}{new_val1}x{new_val2}')
                 else:
-                    val1, val2 = cell[1].text().replace(INFO_POSITION, '')\
+                    val1, val2 = cell[1].text().replace(INFO_POSITION, '') \
                         .replace('X: ', '').replace('Y:', '').split(', ')
                     val3, val4 = connects[i - 1][1].text().replace(INFO_SIZE, '').split('x')
                     new_val1, new_val2 = Size_XY_Dialog(self, val1, val2, val3, val4).exec_()
                     cell[1].setText(f'{INFO_POSITION}X: {new_val1}, Y: {new_val2}')
 
+    # Возвращает значения с окна
     def exec_(self):
         super(ChangeDialog, self).exec_()
         return self.new_list, self.has_changes, self.has_image_changed
