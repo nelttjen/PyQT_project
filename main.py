@@ -26,7 +26,7 @@ from Utils.Values import GRID_PATTERN_SIZE, OUTPUT_PATH, PREVIEW_PATH, DEFAULT_P
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.39'
+        self.VERSION = '1.42'
         self.APP_NAME = 'Meme Generator'
 
         # UI
