@@ -7,6 +7,7 @@ INFO_POSITION: str = 'Текущее положение:\n'
 NEW_PATTERN_PATH: str = './Images/Temp/new_pattern.png'
 GRID_PATTERN_SIZE: tuple = (284, 190)
 
+DEFAULT_PATH: str = './Images/Default/default.png'
 OUTPUT_PATH: str = './Images/Output/output.png'
 PREVIEW_PATH: str = './Images/Preview/preview.png'
 PREVIEW_SIZE: tuple = (854, 540)

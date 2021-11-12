@@ -9,7 +9,7 @@ from Utils.AlphaConverter import convert_image
 from Utils.Free_ID import get_free_id
 from Utils.Path import get_name_from_path
 
-from Utils.Values import CREATE as CREATE_MODE
+from Utils.Values import CREATE as CREATE_MODE, DEFAULT_PATH
 from Utils.Values import CHANGE as CHANGE_MODE
 from Utils.Values import CHANGE_DEFAULT as DEFAULT_CHANGE_MODE
 from Utils.Values import INFO_SIZE, INFO_POSITION, NEW_PATTERN_PATH
@@ -499,7 +499,7 @@ class ChangeDialog(QDialog):
     def get_connects(self):
         # для изменения XY и Size
         connects = [[self.text1_Size_XY, self.text1_XY_info, self.text1_Size_info],
-                    [self.text1_Size_XY, self.text2_XY_info, self.text2_Size_info],
+                    [self.text2_Size_XY, self.text2_XY_info, self.text2_Size_info],
                     [self.image1_Size_XY, self.image1_XY_info, self.image1_Size_info],
                     [self.image2_Size_XY, self.image2_XY_info, self.image2_Size_info]]
         return connects
@@ -507,20 +507,23 @@ class ChangeDialog(QDialog):
     def set_value(self):
         # вызывает окно редактирования выбранного XY и Size
         connects = self.get_connects()
-        for i, cell in enumerate(connects):
-            if cell[0].objectName() == self.sender().objectName():
-                xy, size = get_values_from_text(cell[1].text(), cell[2].text())
-                if self.path != NEW_PATTERN_PATH:
-                    path = f'./Images/Patterns/{get_name_from_path(self.path)}.png'
-                else:
-                    path = NEW_PATTERN_PATH
-                new_xy, new_size, success = BoxDialog(self, path, xy + size).exec_()
-                if success:
-                    text_xy, text_size = format_text(new_xy, new_size)
-                    cell[1].setText(text_xy)
-                    cell[2].setText(text_size)
-
+        if self.mode == CHANGE_MODE or self.path != DEFAULT_PATH:
+            for i, cell in enumerate(connects):
+                if cell[0].objectName() == self.sender().objectName():
+                    xy, size = get_values_from_text(cell[1].text(), cell[2].text())
+                    if self.path != NEW_PATTERN_PATH:
+                        path = f'./Images/Patterns/{get_name_from_path(self.path)}.png'
+                    else:
+                        path = NEW_PATTERN_PATH
+                    new_xy, new_size, success = BoxDialog(self, path, xy + size).exec_()
+                    if success:
+                        text_xy, text_size = format_text(new_xy, new_size)
+                        cell[1].setText(text_xy)
+                        cell[2].setText(text_size)
+        else:
+            self.error_message('Сначала загрузите картинку в шаблон')
     # Возвращает значения с окна
+
     def exec_(self):
         super(ChangeDialog, self).exec_()
         return self.new_list, self.has_changes, self.has_image_changed

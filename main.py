@@ -20,13 +20,13 @@ from Utils.Delimiter import text_delimiter
 from Utils.Pallite import create_palette
 from Utils.Path import get_name_from_path
 from Utils.Clipboard import send_to_clipboard as clip
-from Utils.Values import GRID_PATTERN_SIZE, OUTPUT_PATH, PREVIEW_PATH
+from Utils.Values import GRID_PATTERN_SIZE, OUTPUT_PATH, PREVIEW_PATH, DEFAULT_PATH
 
 
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.38'
+        self.VERSION = '1.39'
         self.APP_NAME = 'Meme Generator'
 
         # UI
@@ -45,7 +45,7 @@ class Window(QMainWindow):
         self.img2 = None
         self.img_pattern = None
 
-        self.update_pixmap('Images/Default/default.png')
+        self.update_pixmap(DEFAULT_PATH)
 
         # color
         self.btn_color = QPushButton(self)
@@ -129,7 +129,7 @@ class Window(QMainWindow):
 
     def clear_all(self):
         # удалить данные о шаблоне
-        self.update_pixmap('Images/Default/default.png')
+        self.update_pixmap(DEFAULT_PATH)
         self.img_pattern = None
         self.flag = False
         self.clear_image()
@@ -322,7 +322,7 @@ class Window(QMainWindow):
             draw.text(position,
                       text,
                       fill=(255, 255, 255), font=font,
-                      align="center", stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
+                      align=align, stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
         except Exception as e:
             print(e.__str__())
 
@@ -418,10 +418,12 @@ def clear_temp():
     pic2 = 'Images/Temp/img_patternTemp.png'
     pic3 = 'Images/Temp/convert.jpg'
     pic4 = 'Images/Temp/new_pattern.png'
+    pic5 = 'Images/Output/output.png'
     os.remove(pic1) if os.path.exists(pic1) else None
     os.remove(pic2) if os.path.exists(pic2) else None
     os.remove(pic3) if os.path.exists(pic3) else None
     os.remove(pic4) if os.path.exists(pic4) else None
+    os.remove(pic5) if os.path.exists(pic5) else None
 
 
 if __name__ == '__main__':
@@ -429,8 +431,6 @@ if __name__ == '__main__':
     list_patterns = init_app()
     app = QApplication(sys.argv)
     sys.excepthook = except_hook
-    # gf = BoxDialog(values=(0, 578, 928, 506)).exec_()
-    # exit()
     f = Window(list_patterns)
     f.setPalette(create_palette('MainScreen'))
     f.show()

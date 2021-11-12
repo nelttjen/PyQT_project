@@ -170,26 +170,27 @@ class PatternDialog(QtWidgets.QDialog):
     def add_widget(self, pattern, x, y):
         # Добавление картинки в Grid полы
         p_name = get_name_from_path(pattern[0])
-        preview_path = f'./Images/Patterns/Preview/{p_name}.png'
-        pattern_path = f'./Images/Patterns/{p_name}.png'
-        if os.path.exists(preview_path) and os.path.exists(pattern_path):
-            pixmap = QtGui.QPixmap(preview_path)
-            label = QClickLabel()
-            label.setPixmap(pixmap)
-            label.setObjectName(p_name)
-            label.single_clicked.connect(self.select)
-            label.double_clicked.connect(self.double_click)
-            self.view_patterns.addWidget(label, x, y)
-            self.viewed_patterns.append([label, preview_path, p_name])
+        if p_name:
+            preview_path = f'./Images/Patterns/Preview/{p_name}.png'
+            pattern_path = f'./Images/Patterns/{p_name}.png'
+            if os.path.exists(preview_path) and os.path.exists(pattern_path):
+                pixmap = QtGui.QPixmap(preview_path)
+                label = QClickLabel()
+                label.setPixmap(pixmap)
+                label.setObjectName(p_name)
+                label.single_clicked.connect(self.select)
+                label.double_clicked.connect(self.double_click)
+                self.view_patterns.addWidget(label, x, y)
+                self.viewed_patterns.append([label, preview_path, p_name])
+                return True
+            elif int(get_clean_id(p_name)) > DEFAULT_PATTERNS_COUNT:
+                # На случай если кастом картинку удалили - удалить данные с бд
+                self.delete_script(get_clean_id(p_name))
+                # И опять зарегать все картинки сначала
+                self.update_pattern_view()
+                return False
+            # Ну если удалили дефолт картинку - тут уже ниче не поделаешь, переустанавливайте :p
             return True
-        elif int(get_clean_id(p_name)) > DEFAULT_PATTERNS_COUNT:
-            # На случай если кастом картинку удалили - удалить данные с бд
-            self.delete_script(get_clean_id(p_name))
-            # И опять зарегать все картинки сначала
-            self.update_pattern_view()
-            return False
-        # Ну если удалили дефолт картинку - тут уже ниче не поделаешь, переустанавливайте :p
-        return True
 
     def select(self):
         # Также вызывается при сингл клике по лейблу
@@ -206,16 +207,18 @@ class PatternDialog(QtWidgets.QDialog):
                 # сетнуть ласт картинке норм вид
                 self.update_picture(int(last.replace('pattern', '')))
             # создать и сохранить картинку с рамкой
-            image_select(p_name)
-            pixmap = QtGui.QPixmap('./Images/Temp/select.png')
-            if self.sender().objectName():
-                # если картинка не была получена с изменения или создания
-                self.sender().setPixmap(pixmap)
-            else:
-                # иначе найти лейбл по имени и изменить картинку
-                self.find_label_by_name(p_name).setPixmap(pixmap)
-            # ну и записать pattern_name как селект
-            self.selected = p_name
+            if p_name:
+                # проверка, был ли вообще выбор
+                image_select(p_name)
+                pixmap = QtGui.QPixmap('./Images/Temp/select.png')
+                if self.sender().objectName():
+                    # если картинка не была получена с изменения или создания
+                    self.sender().setPixmap(pixmap)
+                else:
+                    # иначе найти лейбл по имени и изменить картинку
+                    self.find_label_by_name(p_name).setPixmap(pixmap)
+                # ну и записать pattern_name как селект
+                self.selected = p_name
         except Exception as e:
             # вдруг что-то пойдет не так
             print(e.__str__())
