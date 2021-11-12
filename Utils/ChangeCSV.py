@@ -9,14 +9,17 @@ def restore_default_csv(key_id, isFullRestore=False):
                ['PatternDialog', '220', '220', '220']]
     csv_data = load_csv()
     with open('./Data/Background.csv', 'w', newline='') as out:
-        for i, cell in enumerate(default):
-            if cell[0] == key_id:
-                csv_data[i] = cell
-        write = csv.writer(out, delimiter=';')
-        if isFullRestore:
-            write.writerows(default)
-        else:
-            write.writerows(csv_data)
+        try:
+            for i, cell in enumerate(default):
+                if cell[0] == key_id:
+                    csv_data[i] = cell
+            write = csv.writer(out, delimiter=';')
+            if isFullRestore:
+                write.writerows(default)
+            else:
+                write.writerows(csv_data)
+        finally:
+            out.close()
 
 
 def change_color(color, key_id):
@@ -26,5 +29,8 @@ def change_color(color, key_id):
         if cell[0] == key_id:
             csv_data[i] = [key_id, r, g, b]
     with open('./Data/Background.csv', 'w', newline='') as back_csv:
-        writer = csv.writer(back_csv, delimiter=';')
-        writer.writerows(csv_data)
+        try:
+            writer = csv.writer(back_csv, delimiter=';')
+            writer.writerows(csv_data)
+        finally:
+            back_csv.close()

@@ -1,32 +1,31 @@
 import os
-
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QPushButton, QColorDialog
-from PyQt5.QtGui import QPixmap, QPalette, QColor, QIcon
-from PyQt5 import uic
-
-from PIL import Image, ImageDraw, ImageFont
-import sys
 import shutil
+import sys
+
+from io import BytesIO
+from win32clipboard import CF_DIB
+from PIL import Image, ImageDraw, ImageFont
+from PyQt5 import uic
+from PyQt5.QtGui import QPixmap, QPalette, QColor, QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QPushButton, QColorDialog
 
 from Dialog.AgreementDialog import AgreementDialog
 from Dialog.PatternDialog import PatternDialog
-
 from Pattern.Pattern import find_pattern_by_id
 from Pattern.RegPatterns import recreate_patterns
-
-from Utils.Pallite import create_palette
-from Utils.Delimiter import text_delimiter
 from Utils.AlphaConverter import convert_image
 from Utils.ChangeCSV import restore_default_csv, change_color
+from Utils.Delimiter import text_delimiter
+from Utils.Pallite import create_palette
 from Utils.Path import get_name_from_path
-
-from Utils.Values import GRID_PATTERN_SIZE
+from Utils.Clipboard import send_to_clipboard as clip
+from Utils.Values import GRID_PATTERN_SIZE, OUTPUT_PATH, PREVIEW_PATH
 
 
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.28'
+        self.VERSION = '1.35'
         self.APP_NAME = 'Meme Generator'
 
         # UI
@@ -50,6 +49,8 @@ class Window(QMainWindow):
         # color
         self.btn_color = QPushButton(self)
         self.btn_color.resize(30, 30)
+        color_pixmap = QIcon('./Images/Default/palette.png')
+        self.btn_color.setIcon(color_pixmap)
 
         self.btn_color_restore = QPushButton(self)
         self.btn_color_restore.resize(30, 30)
@@ -59,6 +60,7 @@ class Window(QMainWindow):
         # Functions
         self.btn_connect()
         self.update_edits()
+        self.update_save_buttons()
 
     def btn_connect(self):
         self.btn_clear.clicked.connect(self.clear_all)
@@ -66,22 +68,13 @@ class Window(QMainWindow):
 
         self.btn_preview.clicked.connect(self.update_preview)
         self.btn_save.clicked.connect(self.save_meme)
+        self.clip.clicked.connect(self.copy_co_clipboard)
 
         self.image1.clicked.connect(self.set_img)
         self.image2.clicked.connect(self.set_img)
 
         self.btn_color.clicked.connect(self.change_color)
         self.btn_color_restore.clicked.connect(self.default_color)
-
-        color_pixmap = QIcon('./Images/Default/palette.png')
-        self.btn_color.setIcon(color_pixmap)
-
-    def clear_all(self):
-        self.update_pixmap('Images/Default/default.png')
-        self.img_pattern = None
-        self.flag = False
-        self.clear_image()
-        self.update_edits()
 
     def set_pattern(self):
         # Вызов диалога выбора шаблонов
@@ -104,19 +97,9 @@ class Window(QMainWindow):
         img = Image.open(f'Images/Patterns/{pattern_id}.png')
         img.save('Images/Temp/img_patternTemp.png')
         img_preview = img.resize(self.previewSize)
-        img_preview.save('Images/Preview/preview.png')
+        img_preview.save(PREVIEW_PATH)
         self.update_pixmap()
         print(self.img_pattern)
-
-    def update_pixmap(self, path='Images/Preview/preview.png'):
-        # Меняет картинку на главном экране
-        self.img_preview.setPixmap(QPixmap(path))
-
-    def update_preview(self):
-        # Кнопка Применить, пересоздает картинку и отображает её
-        if self.img_pattern:
-            self.flag = self.recreate_image()
-            self.update_pixmap()
 
     def recreate_image(self):
         # Пересоздает мем и сохраняет его в Output
@@ -137,15 +120,52 @@ class Window(QMainWindow):
             if self.img_pattern[4][0] and self.img2:
                 self.img2 = self.draw_image(self.img2, 2, meme)
                 flag = True
-            meme.save('Images/Output/output.png')
+            meme.save(OUTPUT_PATH)
             img_preview = meme.resize(self.previewSize)
-            img_preview.save('Images/Preview/preview.png')
+            img_preview.save(PREVIEW_PATH)
             # Возвращает были ли какие-то изменения шаблона
             return flag
+
+    def clear_all(self):
+        # удалить данные о шаблоне
+        self.update_pixmap('Images/Default/default.png')
+        self.img_pattern = None
+        self.flag = False
+        self.clear_image()
+        self.update_edits()
+        self.update_save_buttons()
+
+    def clear_image(self):
+        # удалить обе загружеенные картинки
+        self.img1 = None
+        self.img2 = None
+        self.update_img_info()
+
+    def update_pixmap(self, path=PREVIEW_PATH):
+        # Меняет картинку на главном экране
+        self.img_preview.setPixmap(QPixmap(path))
+
+    def update_preview(self):
+        # Кнопка Применить, пересоздает картинку и отображает её
+        if self.img_pattern:
+            self.flag = self.recreate_image()
+            self.update_pixmap()
+            self.update_save_buttons()
+
+    def update_save_buttons(self):
+        if self.flag:
+            self.btn_save.show()
+            self.clip.show()
+        else:
+            self.btn_save.hide()
+            self.clip.hide()
 
     def update_edits(self, pattern=None):
         # обновление полей при установке нового шаблона либо отчистке
         if pattern:
+            self.edit_box.show()
+            self.btn_preview.show()
+
             self.line1.show() if pattern[1][0] else self.line1.hide()
             self.lineEdit1.show() if pattern[1][0] else self.lineEdit1.hide()
             self.lineEdit1.setReadOnly(False) if pattern[1][0] else self.lineEdit1.setReadOnly(True)
@@ -160,25 +180,16 @@ class Window(QMainWindow):
 
             self.flag = False
         else:
-            self.line1.hide()
-            self.line2.hide()
-            self.lineEdit1.hide()
-            self.lineEdit2.hide()
-            self.image1.hide()
-            self.image2.hide()
-            self.image1Info.hide()
-            self.image2Info.hide()
+            self.edit_box.hide()
+            self.btn_preview.hide()
         # удаление старого мема
-        try:
-            os.remove('./Images/Output/output.png')
-        except FileNotFoundError:
-            pass
+        if os.path.exists(OUTPUT_PATH):
+            os.remove(OUTPUT_PATH)
         self.lineEdit1.setText('')
         self.lineEdit2.setText('')
         self.img1 = None
         self.img2 = None
-        self.image1Info.setText('Картинка 1\nне загружена')
-        self.image2Info.setText('Картинка 2\nне загружена')
+        self.update_img_info()
 
     def set_img(self):
         # Кнопка загрузить картинку, загружается pillow изображение
@@ -216,12 +227,6 @@ class Window(QMainWindow):
         except Exception as e:
             print(e)
             QMessageBox.critical(self, "Ошибка ", "Невозможно открыть файл", QMessageBox.Ok)
-
-    def clear_image(self):
-        # удалить обе загружеенные картинки
-        self.img1 = None
-        self.img2 = None
-        self.update_img_info()
 
     def update_img_info(self):
         # апдейтер информации о загрузкее картинок
@@ -269,10 +274,23 @@ class Window(QMainWindow):
             text = "Не выбран шаблон!" if not self.img_pattern else "Вы ничего не изменили в шаблоне!"
             QMessageBox.critical(self, "Ошибка ", text, QMessageBox.Ok)
 
+    def copy_co_clipboard(self):
+        if self.flag and os.path.exists(OUTPUT_PATH):
+            out = BytesIO()
+            img = Image.open(OUTPUT_PATH)
+            img.save(out, 'BMP')
+            # img.close()
+            image_data = out.getvalue()[14:]
+            out.close()
+
+            clip(CF_DIB, image_data)
+        else:
+            QMessageBox.critical(self, "Ошибка ", "Вы ничего не изменили в шаблоне!", QMessageBox.Ok)
+
     def change_color(self):
         # дииалог выбора цвета
         color = QColorDialog.getColor()
-        if color.getRgb()[:-1] != (0, 0, 0):
+        if color.isValid():
             self.set_color(color)
 
     def set_color(self, color):

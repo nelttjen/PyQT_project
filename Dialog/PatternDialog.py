@@ -15,21 +15,18 @@ from PIL import Image
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton, QColorDialog
 
-from Pattern.Pattern import find_pattern_by_id
-from Pattern.RegPatterns import recreate_patterns
-
-from Utils.ChangeCSV import change_color, restore_default_csv
-from Utils.DatabaseHandler import change_to_db, remove_pattern_from_db
-from Utils.ImageSilect import image_select
-from Utils.Pallite import create_palette
-from Utils.Path import *
 
 from Dialog.AgreementDialog import AgreementDialog
 from Dialog.ChangeDialog import ChangeDialog
+from Pattern.Pattern import find_pattern_by_id
+from Pattern.RegPatterns import recreate_patterns
+from Utils.ChangeCSV import change_color, restore_default_csv
+from Utils.DatabaseHandler import change_to_db, remove_pattern_from_db
+from Utils.ImageSelect import image_select
+from Utils.Pallite import create_palette
+from Utils.Path import *
 
-from Dialog.ChangeDialog import NEW_PATTERN_PATH
-
-from Utils.Values import CREATE, CHANGE, CHANGE_DEFAULT, DEFAULT_PATTERNS_COUNT
+from Utils.Values import CREATE, CHANGE, CHANGE_DEFAULT, DEFAULT_PATTERNS_COUNT, NEW_PATTERN_PATH
 
 
 def copy_new_pattern(pattern_id):
@@ -149,7 +146,7 @@ class PatternDialog(QtWidgets.QDialog):
             self.viewed_patterns.append([label, path, p_name])
 
     def reg_pattern_view(self):
-        for j in range(175):
+        for j in range(511):
             if j < len(self.pattern_list):
                 x = j // 3
                 y = j % 3
@@ -277,7 +274,7 @@ class PatternDialog(QtWidgets.QDialog):
 
     def change_color(self):
         color = QColorDialog.getColor()
-        if color.getRgb()[:-1] != (0, 0, 0):
+        if color.isValid():
             self.set_color(color)
 
     def set_color(self, color):
