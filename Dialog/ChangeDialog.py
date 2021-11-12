@@ -4,9 +4,10 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog, QDialog, QMessageBox
 from PyQt5 import uic
 
-from Dialog.Size_XY_Dialog import Size_XY_Dialog
+from Dialog.BoxDialog import BoxDialog
 from Utils.AlphaConverter import convert_image
 from Utils.Free_ID import get_free_id
+from Utils.Path import get_name_from_path
 
 from Utils.Values import CREATE as CREATE_MODE
 from Utils.Values import CHANGE as CHANGE_MODE
@@ -18,6 +19,12 @@ def format_text(position=(0, 0), size=(0, 0)):
     info_pos = INFO_POSITION + f'X: {position[0]}, Y: {position[1]}'
     info_size = INFO_SIZE + f'{size[0]}x{size[1]}'
     return info_pos, info_size
+
+
+def get_values_from_text(xy_text, size_text):
+    x, y = xy_text.replace(INFO_POSITION, '').replace('X: ', '').replace('Y: ', '').split(', ')
+    size_x, size_y = size_text.replace(INFO_SIZE, '').split('x')
+    return (int(x), int(y)), (int(size_x), int(size_y))
 
 
 def pixmap_handler(target, pixmap):
@@ -82,7 +89,7 @@ def get_image_props(props_list):
 
 
 # отключает переданные в функцию виджеты
-def disable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None, t_Size=None, t_box=None):
+def disable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY_Size=None, t_box=None):
     if t_textSize:
         t_textSize.setReadOnly(True)
         t_textSize.setText('')
@@ -92,17 +99,15 @@ def disable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None,
     if t_Aligns:
         for i in t_Aligns:
             i.setCheckable(False)
-    if t_XY:
-        t_XY.setEnabled(False)
-    if t_Size:
-        t_Size.setEnabled(False)
+    if t_XY_Size:
+        t_XY_Size.setEnabled(False)
     if t_box:
         # на случай если (Отключено) уже добавлялось
         t_box.setTitle(t_box.title().replace(' (Отключено)', '') + ' (Отключено)')
 
 
 # включает переданные в функцию виджеты
-def enable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None, t_Size=None, t_box=None):
+def enable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY_Size=None, t_box=None):
     if t_textSize:
         t_textSize.setReadOnly(False)
         t_textSize.setText('1')
@@ -114,10 +119,8 @@ def enable_handler(t_textSize=None, t_Delimiter=None, t_Aligns=None, t_XY=None, 
             i.setCheckable(True)
             if i.objectName() == 'text1_align_center' or i.objectName() == 'text2_align_center':
                 i.setChecked(True)
-    if t_XY:
-        t_XY.setEnabled(True)
-    if t_Size:
-        t_Size.setEnabled(True)
+    if t_XY_Size:
+        t_XY_Size.setEnabled(True)
     if t_box:
         t_box.setTitle(t_box.title().replace(' (Отключено)', ''))
 
@@ -196,11 +199,11 @@ class ChangeDialog(QDialog):
         image_handler(self.image1_XY_info, self.image1_Size_info)
         image_handler(self.image2_XY_info, self.image2_Size_info)
         disable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
-                        self.text1_XY, self.text1_Size, self.text1)
+                        self.text1_Size_XY, self.text1)
         disable_handler(self.text2_textSize, self.text2_delimiter, self.get_text_aligns(2),
-                        self.text2_XY, self.text2_Size, self.text2)
-        disable_handler(t_XY=self.image1_XY, t_Size=self.image1_Size, t_box=self.image1)
-        disable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
+                        self.text2_Size_XY, self.text2)
+        disable_handler(t_XY_Size=self.image1_Size_XY, t_box=self.image1)
+        disable_handler(t_XY_Size=self.image2_Size_XY, t_box=self.image2)
         pixmap = QPixmap(self.path)
         pixmap_handler(self.pattern_preview, pixmap)
 
@@ -216,7 +219,7 @@ class ChangeDialog(QDialog):
                          text_XY=pos, text_Size=size)
         else:
             disable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
-                            self.text1_Size, self.text1_XY, self.text1)
+                            self.text1_Size_XY, self.text1)
 
         # text2
         if self.pattern[2][0]:
@@ -228,7 +231,7 @@ class ChangeDialog(QDialog):
                          text_XY=pos, text_Size=size)
         else:
             disable_handler(self.text2_textSize, self.text2_delimiter, self.get_text_aligns(2),
-                            self.text2_Size, self.text2_XY, self.text2)
+                            self.text2_Size_XY, self.text2)
 
         # image1
         if self.pattern[3][0]:
@@ -236,7 +239,7 @@ class ChangeDialog(QDialog):
             image_handler(self.image1_XY_info, self.image1_Size_info,
                           image_XY=position, image_size=size)
         else:
-            disable_handler(t_XY=self.image1_XY, t_Size=self.image1_Size, t_box=self.image1)
+            disable_handler(t_XY_Size=self.image1_Size_XY, t_box=self.image1)
 
         # image 2
         if self.pattern[4][0]:
@@ -244,7 +247,7 @@ class ChangeDialog(QDialog):
             image_handler(self.image2_XY_info, self.image2_Size_info,
                           image_XY=position, image_size=size)
         else:
-            disable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
+            disable_handler(t_XY_Size=self.image2_Size_XY, t_box=self.image2)
         pixmap = QPixmap(self.path)
         pixmap_handler(self.pattern_preview, pixmap)
 
@@ -257,10 +260,10 @@ class ChangeDialog(QDialog):
                          textSize=self.pattern[1][3], textDelimiter=self.pattern[1][4],
                          text_XY=self.pattern[1][1], text_Size=self.pattern[1][2])
             disable_handler(t_Aligns=self.get_text_aligns(1),
-                            t_XY=self.text1_XY, t_Size=self.text1_Size)
+                            t_XY_Size=self.text1_Size_XY)
         else:
             disable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
-                            self.text1_Size, self.text1_XY, self.text1)
+                            self.text1_Size_XY, self.text1)
         # text2
         if self.pattern[2][0]:
             text_handler(t_textSize=self.text2_textSize, t_Delimiter=self.text2_delimiter,
@@ -268,23 +271,22 @@ class ChangeDialog(QDialog):
                          textSize=self.pattern[2][3], textDelimiter=self.pattern[2][4],
                          text_XY=self.pattern[2][1], text_Size=self.pattern[2][2])
             disable_handler(t_Aligns=self.get_text_aligns(2),
-                            t_XY=self.text2_XY, t_Size=self.text2_Size)
+                            t_XY_Size=self.text2_Size_XY)
         else:
             disable_handler(self.text2_textSize, self.text2_delimiter, self.get_text_aligns(2),
-                            self.text2_Size, self.text2_XY, self.text2)
+                            self.text2_Size_XY, self.text2)
         # image1
         if self.pattern[3][0]:
             position, size = get_image_props(self.pattern[3])
-            print(position, size)
             image_handler(self.image1_XY_info, self.image1_Size_info,
                           image_XY=position, image_size=size)
-        disable_handler(t_XY=self.image1_XY, t_Size=self.image1_Size, t_box=self.image1)
+        disable_handler(t_XY_Size=self.image1_Size_XY, t_box=self.image1)
         # image2
         if self.pattern[4][0]:
             position, size = get_image_props(self.pattern[4])
             image_handler(self.image2_XY_info, self.image2_Size_info,
                           image_XY=position, image_size=size)
-        disable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
+        disable_handler(t_XY_Size=self.image2_Size_XY, t_box=self.image2)
         pixmap = QPixmap(self.path)
         pixmap_handler(self.pattern_preview, pixmap)
         self.change_pattern.setEnabled(False)
@@ -294,10 +296,10 @@ class ChangeDialog(QDialog):
         self.change_pattern.clicked.connect(self.set_new_pattern)
 
         # для иззменения значений XY и Size
-        button_pattern = {1: 'text1_Size', 2: 'text1_XY',
-                          3: 'text2_Size', 4: 'text2_XY',
-                          5: 'image1_Size', 6: 'image1_XY',
-                          7: 'image2_Size', 8: 'image2_XY'}
+        button_pattern = {1: 'text1_Size_XY',
+                          2: 'text2_Size_XY',
+                          3: 'image1_Size_XY',
+                          4: 'image2_Size_XY'}
         for i, val in enumerate(self.get_connects()):
             val[0].clicked.connect(self.set_value)
             val[0].setObjectName(button_pattern[i + 1])
@@ -453,31 +455,31 @@ class ChangeDialog(QDialog):
         # включает/выключает поля в режиме создания
         if self.text1_enable.isChecked():
             enable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
-                           self.text1_Size, self.text1_XY, self.text1)
+                           self.text1_Size_XY, self.text1)
             self.create_text1 = True
         else:
             disable_handler(self.text1_textSize, self.text1_delimiter, self.get_text_aligns(1),
-                            self.text1_Size, self.text1_XY, self.text1)
+                            self.text1_Size_XY, self.text1)
             self.create_text1 = False
         if self.text2_enable.isChecked():
             enable_handler(self.text2_textSize, self.text2_delimiter, self.get_text_aligns(2),
-                           self.text2_Size, self.text2_XY, self.text2)
+                           self.text2_Size_XY, self.text2)
             self.create_text2 = True
         else:
             disable_handler(self.text2_textSize, self.text2_delimiter, self.get_text_aligns(2),
-                            self.text2_Size, self.text2_XY, self.text2)
+                            self.text2_Size_XY, self.text2)
             self.create_text2 = False
         if self.image1_enable.isChecked():
-            enable_handler(t_XY=self.image1_XY, t_Size=self.image1_Size, t_box=self.image1)
+            enable_handler(t_XY_Size=self.image1_Size_XY, t_box=self.image1)
             self.create_image1 = True
         else:
-            disable_handler(t_XY=self.image1_XY, t_Size=self.image1_Size, t_box=self.image1)
+            disable_handler(t_XY_Size=self.image1_Size_XY, t_box=self.image1)
             self.create_image1 = False
         if self.image2_enable.isChecked():
-            enable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
+            enable_handler(t_XY_Size=self.image2_Size_XY, t_box=self.image2)
             self.create_image2 = True
         else:
-            disable_handler(t_XY=self.image2_XY, t_Size=self.image2_Size, t_box=self.image2)
+            disable_handler(t_XY_Size=self.image2_Size_XY, t_box=self.image2)
             self.create_image2 = False
 
     def set_new_pattern(self):
@@ -496,14 +498,10 @@ class ChangeDialog(QDialog):
 
     def get_connects(self):
         # для изменения XY и Size
-        connects = [[self.text1_Size, self.text1_Size_info],
-                    [self.text1_XY, self.text1_XY_info],
-                    [self.text2_Size, self.text2_Size_info],
-                    [self.text2_XY, self.text2_XY_info],
-                    [self.image1_Size, self.image1_Size_info],
-                    [self.image1_XY, self.image1_XY_info],
-                    [self.image2_Size, self.image2_Size_info],
-                    [self.image2_XY, self.image2_XY_info]]
+        connects = [[self.text1_Size_XY, self.text1_XY_info, self.text1_Size_info],
+                    [self.text1_Size_XY, self.text2_XY_info, self.text2_Size_info],
+                    [self.image1_Size_XY, self.image1_XY_info, self.image1_Size_info],
+                    [self.image2_Size_XY, self.image2_XY_info, self.image2_Size_info]]
         return connects
 
     def set_value(self):
@@ -511,19 +509,16 @@ class ChangeDialog(QDialog):
         connects = self.get_connects()
         for i, cell in enumerate(connects):
             if cell[0].objectName() == self.sender().objectName():
-                name = cell[0].objectName()
-                if name in ('text1_Size', 'text2_Size', 'image1_Size', 'image2_Size'):
-                    val1, val2 = cell[1].text().replace(INFO_SIZE, '').split('x')
-                    val3, val4 = connects[i + 1][1].text().replace(INFO_POSITION, '') \
-                        .replace('X: ', '').replace('Y:', '').split(', ')
-                    new_val1, new_val2 = Size_XY_Dialog(self, val1, val2, val3, val4).exec_()
-                    cell[1].setText(f'{INFO_SIZE}{new_val1}x{new_val2}')
+                xy, size = get_values_from_text(cell[1].text(), cell[2].text())
+                if self.path != NEW_PATTERN_PATH:
+                    path = f'./Images/Patterns/{get_name_from_path(self.path)}.png'
                 else:
-                    val1, val2 = cell[1].text().replace(INFO_POSITION, '') \
-                        .replace('X: ', '').replace('Y:', '').split(', ')
-                    val3, val4 = connects[i - 1][1].text().replace(INFO_SIZE, '').split('x')
-                    new_val1, new_val2 = Size_XY_Dialog(self, val1, val2, val3, val4).exec_()
-                    cell[1].setText(f'{INFO_POSITION}X: {new_val1}, Y: {new_val2}')
+                    path = NEW_PATTERN_PATH
+                new_xy, new_size, success = BoxDialog(self, path, xy + size).exec_()
+                if success:
+                    text_xy, text_size = format_text(new_xy, new_size)
+                    cell[1].setText(text_xy)
+                    cell[2].setText(text_size)
 
     # Возвращает значения с окна
     def exec_(self):

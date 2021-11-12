@@ -148,36 +148,23 @@ X: 0, Y: 0</string>
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="text1_Size">
+   <widget class="QPushButton" name="text1_Size_XY">
     <property name="enabled">
      <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
-      <x>330</x>
+      <x>380</x>
       <y>20</y>
-      <width>111</width>
+      <width>121</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>Изменить размер</string>
+     <string>Изменить</string>
     </property>
     <property name="checkable">
      <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="text1_XY">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>20</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Изменить позицию</string>
     </property>
    </widget>
    <widget class="QLabel" name="text1_Size_info">
@@ -337,32 +324,6 @@ X: 0, Y: 0</string>
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="text2_Size">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>20</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Изменить размер</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="text2_XY">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>20</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Изменить позицию</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="text2_Size_info">
     <property name="geometry">
      <rect>
@@ -426,6 +387,25 @@ X: 0, Y: 0</string>
      </rect>
     </property>
    </widget>
+   <widget class="QPushButton" name="text2_Size_XY">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>20</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Изменить</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="image1">
    <property name="geometry">
@@ -439,32 +419,6 @@ X: 0, Y: 0</string>
    <property name="title">
     <string>Настройки картинки 1:</string>
    </property>
-   <widget class="QPushButton" name="image1_XY">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>20</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Изменить позицию</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="image1_Size">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Изменить размер</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="image1_Size_info">
     <property name="geometry">
      <rect>
@@ -499,6 +453,25 @@ X: 0, Y: 0</string>
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QPushButton" name="image1_Size_XY">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>20</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Изменить</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="image2">
    <property name="geometry">
@@ -512,32 +485,6 @@ X: 0, Y: 0</string>
    <property name="title">
     <string>Настройки картинки 2:</string>
    </property>
-   <widget class="QPushButton" name="image2_XY">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>20</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Изменить позицию</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="image2_Size">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>111</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Изменить размер</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="image2_Size_info">
     <property name="geometry">
      <rect>
@@ -570,6 +517,25 @@ X: 0, Y: 0</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="image2_Size_XY">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>20</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Изменить</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1081</width>
-    <height>860</height>
+    <height>793</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,8 +30,8 @@
    <widget class="QPushButton" name="btn_save">
     <property name="geometry">
      <rect>
-      <x>974</x>
-      <y>812</y>
+      <x>970</x>
+      <y>720</y>
       <width>111</width>
       <height>51</height>
      </rect>
@@ -43,7 +43,7 @@
    <widget class="QPushButton" name="btn_pattern">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>380</x>
       <y>580</y>
       <width>131</width>
       <height>61</height>
@@ -56,7 +56,7 @@
    <widget class="QPushButton" name="btn_clear">
     <property name="geometry">
      <rect>
-      <x>560</x>
+      <x>540</x>
       <y>580</y>
       <width>131</width>
       <height>61</height>
@@ -66,24 +66,11 @@
      <string>Очистить</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_preview">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>590</y>
-      <width>101</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Применить</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="clip">
     <property name="geometry">
      <rect>
       <x>1040</x>
-      <y>770</y>
+      <y>680</y>
       <width>41</width>
       <height>41</height>
      </rect>
@@ -96,7 +83,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>650</y>
+      <y>580</y>
       <width>351</width>
       <height>201</height>
      </rect>
@@ -281,6 +268,19 @@
       <bool>false</bool>
      </property>
     </widget>
+   </widget>
+   <widget class="QPushButton" name="btn_preview">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>650</y>
+      <width>111</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Применить</string>
+    </property>
    </widget>
   </widget>
  </widget>

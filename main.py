@@ -34,7 +34,7 @@ class Window(QMainWindow):
         self.setWindowTitle(f'{self.APP_NAME} v{self.VERSION}')
         self.setWindowIcon(QIcon('./Images/Default/logo.png'))
         self.setObjectName('MainScreen')
-        self.setFixedSize(1080, 860)
+        self.setFixedSize(1080, 790)
 
         # DEFAULT VALUES
         self.previewSize = (854, 540)
@@ -413,12 +413,27 @@ def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
 
 
+def clear_temp():
+    pic1 = 'Images/Temp/select.png'
+    pic2 = 'Images/Temp/img_patternTemp.png'
+    pic3 = 'Images/Temp/convert.jpg'
+    pic4 = 'Images/Temp/new_pattern.png'
+    os.remove(pic1) if os.path.exists(pic1) else None
+    os.remove(pic2) if os.path.exists(pic2) else None
+    os.remove(pic3) if os.path.exists(pic3) else None
+    os.remove(pic4) if os.path.exists(pic4) else None
+
+
 if __name__ == '__main__':
     # создание окна и запуск приложения
     list_patterns = init_app()
     app = QApplication(sys.argv)
     sys.excepthook = except_hook
+    # gf = BoxDialog(values=(0, 578, 928, 506)).exec_()
+    # exit()
     f = Window(list_patterns)
     f.setPalette(create_palette('MainScreen'))
     f.show()
-    sys.exit(app.exec_())
+    app.exec_()
+    clear_temp()
+    sys.exit()
