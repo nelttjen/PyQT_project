@@ -419,11 +419,13 @@ def clear_temp():
     pic3 = 'Images/Temp/convert.jpg'
     pic4 = 'Images/Temp/new_pattern.png'
     pic5 = 'Images/Output/output.png'
+    pic6 = 'Images/Preview/preview.png'
     os.remove(pic1) if os.path.exists(pic1) else None
     os.remove(pic2) if os.path.exists(pic2) else None
     os.remove(pic3) if os.path.exists(pic3) else None
     os.remove(pic4) if os.path.exists(pic4) else None
     os.remove(pic5) if os.path.exists(pic5) else None
+    os.remove(pic6) if os.path.exists(pic6) else None
 
 
 if __name__ == '__main__':
