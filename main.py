@@ -382,7 +382,7 @@ def resize_patterns():
             if temp_img.size != (1920, 1080):
                 temp_img = temp_img.resize((1920, 1080))
                 temp_img.save(f'{base_path}/{i}')
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             continue
     # Проверка preview картинок на соответствие размеру
     base_path = './Images/Patterns/Preview'

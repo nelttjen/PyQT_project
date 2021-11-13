@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt, QSize
 
 from Utils.StyleSheet import add_style_sheet
 
+
 def get_pen(color='red'):
     pen = QPen()
     pen.setWidth(5)
