@@ -8,6 +8,7 @@ from Dialog.BoxDialog import BoxDialog
 from Utils.AlphaConverter import convert_image
 from Utils.Free_ID import get_free_id
 from Utils.Path import get_name_from_path
+from Utils.StyleSheet import add_style_sheet
 
 from Utils.Values import CREATE as CREATE_MODE, DEFAULT_PATH
 from Utils.Values import CHANGE as CHANGE_MODE
@@ -190,6 +191,8 @@ class ChangeDialog(QDialog):
             self.change_prepare()
         if self.mode == DEFAULT_CHANGE_MODE:
             self.default_change_prepare()
+        add_style_sheet([self.text1_Size_XY, self.text2_Size_XY, self.image1_Size_XY, self.image2_Size_XY,
+                         self.save_button, self.change_pattern])
 
     def create_prepare(self):
         text_handler(self.text1_textSize, self.text1_delimiter, self.text1_align_center,
@@ -431,12 +434,13 @@ class ChangeDialog(QDialog):
             return None, crash
         try:
             delim = int(target4.text())
-            if delim < 0:
+            if not 0 <= delim <= 10:
                 crash = True
                 raise ValueError
         except ValueError:
             self.error_message('Ошибка:\nТекст 1: Слов на строке\n'
-                               'Не может быть текстом или отрицательным числом')
+                               'Не может быть текстом или отрицательным числом\n'
+                               'Максимум 10 слов на одной строке')
             return None, crash
         if self.mode in (CHANGE_MODE, CREATE_MODE):
             align = get_align_from_buttons(targets5)

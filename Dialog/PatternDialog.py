@@ -25,6 +25,7 @@ from Utils.DatabaseHandler import change_to_db, remove_pattern_from_db
 from Utils.ImageSelect import image_select
 from Utils.Pallite import create_palette
 from Utils.Path import *
+from Utils.StyleSheet import add_style_sheet
 
 from Utils.Values import CREATE, CHANGE, CHANGE_DEFAULT, DEFAULT_PATTERNS_COUNT, NEW_PATTERN_PATH
 
@@ -78,6 +79,10 @@ class PatternDialog(QtWidgets.QDialog):
         self.color = None
         self.color_restore = None
         self.reg_color_buttons()
+
+        # css Button style
+        add_style_sheet([self.btn_select, self.btn_create, self.btn_change,
+                         self.color, self.color_restore])
 
         # Создание Grid поля для отображения
         self.scrollArea = QtWidgets.QScrollArea(self)
@@ -139,7 +144,7 @@ class PatternDialog(QtWidgets.QDialog):
 
         self.color_restore = QPushButton(self)
         self.color_restore.resize(30, 30)
-        self.color_restore.move(30, 720)
+        self.color_restore.move(29, 720)
         self.color_restore.setText('D')
         self.color_restore.clicked.connect(self.default_color)
 

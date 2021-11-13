@@ -20,6 +20,7 @@ from Utils.Delimiter import text_delimiter
 from Utils.Pallite import create_palette
 from Utils.Path import get_name_from_path
 from Utils.Clipboard import send_to_clipboard as clip
+from Utils.StyleSheet import add_style_sheet
 from Utils.Values import GRID_PATTERN_SIZE, OUTPUT_PATH, PREVIEW_PATH, DEFAULT_PATH
 
 
@@ -55,7 +56,7 @@ class Window(QMainWindow):
 
         self.btn_color_restore = QPushButton(self)
         self.btn_color_restore.resize(30, 30)
-        self.btn_color_restore.move(30, 0)
+        self.btn_color_restore.move(29, 0)
         self.btn_color_restore.setText('D')
 
         # Functions
@@ -74,6 +75,10 @@ class Window(QMainWindow):
         self.clear_images.clicked.connect(self.clear_image)
         self.btn_color.clicked.connect(self.change_color)
         self.btn_color_restore.clicked.connect(self.default_color)
+
+        add_style_sheet([self.btn_clear, self.btn_pattern, self.btn_preview, self.btn_save, self.clip,
+                         self.clear_images, self.btn_color, self.btn_color_restore,
+                         self.image1, self.image2])
 
     def set_images_connect(self):
         images = [self.image1, self.image2]
@@ -372,14 +377,15 @@ def get_position(size, position, w, h, align='center'):
 def resize_patterns():
     # проверка основных картинок на соответствие размеру
     base_path = './Images/Patterns'
-    objects = os.listdir(base_path)[-1]
+    objects = os.listdir(base_path)[:-1]
     for i in objects:
         try:
             temp_img = Image.open(f'{base_path}/{i}')
             if temp_img.size != (1920, 1080):
                 temp_img = temp_img.resize((1920, 1080))
                 temp_img.save(f'{base_path}/{i}')
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            print(e)
             continue
     # Проверка preview картинок на соответствие размеру
     base_path = './Images/Patterns/Preview'

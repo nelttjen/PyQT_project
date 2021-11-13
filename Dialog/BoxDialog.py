@@ -1,16 +1,25 @@
 import ctypes
 
 from PyQt5 import QtCore
-from PyQt5.QtGui import QPixmap, QIcon, QImage, QPainter, QBrush, QColor, QPen
+from PyQt5.QtGui import QPixmap, QIcon, QImage, QPainter, QBrush, QColor, QPen, QMouseEvent
 from PyQt5.QtWidgets import QDialog, QPushButton, QLabel
 from PyQt5.QtCore import Qt, QSize
 
+from Utils.StyleSheet import add_style_sheet
 
 def get_pen(color='red'):
     pen = QPen()
     pen.setWidth(5)
     pen.setBrush(QBrush(QColor(color)))
     return pen
+
+
+class QFixedButton(QPushButton):
+    def __init__(self, parent):
+        super(QFixedButton, self).__init__(parent=parent)
+
+    def mouseMoveEvent(self, e: QMouseEvent):
+        pass
 
 
 class QTrackClickLabel(QLabel):
@@ -58,9 +67,9 @@ class BoxDialog(QDialog):
         # widgets
         self.image_qt = QImage(self.path)
         self.image = QTrackClickLabel(self)
-        self.btn_commit = QPushButton(self)
-        self.btn_clear = QPushButton(self)
-        self.close = QPushButton(self)
+        self.btn_commit = QFixedButton(self)
+        self.btn_clear = QFixedButton(self)
+        self.close = QFixedButton(self)
 
         # Functions
         self.init_ui()
@@ -93,6 +102,8 @@ class BoxDialog(QDialog):
         self.btn_clear.move(int((self.user_size[0] - 110 * 2 * self.offset[0])),
                             int((self.user_size[1] - 50 * self.offset[1])))
         self.btn_clear.clicked.connect(self.clear_image)
+
+        add_style_sheet([self.btn_commit, self.btn_clear])
 
     def update_picture(self):
         # обновляет картинку из хранящегося image_qt

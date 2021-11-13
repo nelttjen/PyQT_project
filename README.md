@@ -1,2 +1,3 @@
 # Meme generator By NelttjeN
-[Image]'Images/Default/icon.ico'
+
+__*This program is very important*__
