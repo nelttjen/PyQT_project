@@ -1,0 +1,15 @@
+QPushButton {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    background-color: white;
+}
+QPushButton:hover {
+    background-color: #bbcbcf;
+}
+QPushButton:disabled {
+    border-color: #aebec2;
+    border-style: solid;
+    border-width: 1px;
+    background-color: white;
+}

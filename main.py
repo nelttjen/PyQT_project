@@ -27,7 +27,7 @@ from Utils.Values import GRID_PATTERN_SIZE, OUTPUT_PATH, PREVIEW_PATH, DEFAULT_P
 class Window(QMainWindow):
     def __init__(self, p_list):
         super().__init__()
-        self.VERSION = '1.42'
+        self.VERSION = '1.51'
         self.APP_NAME = 'Meme Generator'
 
         # UI
@@ -108,7 +108,6 @@ class Window(QMainWindow):
         img_preview = img.resize(self.previewSize)
         img_preview.save(PREVIEW_PATH)
         self.update_pixmap()
-        print(self.img_pattern)
 
     def recreate_image(self):
         # Пересоздает мем и сохраняет его в Output
@@ -220,7 +219,6 @@ class Window(QMainWindow):
             # проверка, выбрана ли картинка
             if f_name[0]:
                 f_image = Image.open(f_name[0])
-                print(f_image.mode)
                 # фикс чеерного фона при имеющимся канале прозрачности
                 if f_image.mode[-1] == 'A':
                     f_image = f_image.convert('RGBA')
@@ -235,8 +233,7 @@ class Window(QMainWindow):
         except PermissionError:
             QMessageBox.critical(self, "Ошибка ", "Невозможно открыть файл (Отказано в доступе)", QMessageBox.Ok)
         except Exception as e:
-            print(e)
-            QMessageBox.critical(self, "Ошибка ", "Невозможно открыть файл", QMessageBox.Ok)
+            QMessageBox.critical(self, "Ошибка ", f"Невозможно открыть файл:\n{e.__str__()}", QMessageBox.Ok)
 
     def update_img_info(self):
         # апдейтер информации о загрузкее картинок
@@ -289,7 +286,6 @@ class Window(QMainWindow):
             out = BytesIO()
             img = Image.open(OUTPUT_PATH)
             img.save(out, 'BMP')
-            # img.close()
             image_data = out.getvalue()[14:]
             out.close()
 
@@ -333,7 +329,8 @@ class Window(QMainWindow):
                       fill=(255, 255, 255), font=font,
                       align=align, stroke_width=2 + int(text_size / 40), stroke_fill=(0, 0, 0))
         except Exception as e:
-            print(e.__str__())
+            QMessageBox.critical(self, 'Ошибка',
+                                 f'При выставке текста произошла ошибка:\n{e.__str__()}', QMessageBox.Ok)
 
     def draw_image(self, image, image_id, target):
         # Вставляет картинку в target и возвращает её
@@ -344,7 +341,8 @@ class Window(QMainWindow):
             target.paste(image, position)
             return image
         except Exception as e:
-            print(e.__str__())
+            QMessageBox.critical(self, 'Ошибка',
+                                 f'При выставке картинки произошла ошибка:\n{e.__str__()}', QMessageBox.Ok)
 
 
 def get_text(text, text_size, delim, draw):
@@ -385,7 +383,6 @@ def resize_patterns():
                 temp_img = temp_img.resize((1920, 1080))
                 temp_img.save(f'{base_path}/{i}')
         except FileNotFoundError as e:
-            print(e)
             continue
     # Проверка preview картинок на соответствие размеру
     base_path = './Images/Patterns/Preview'

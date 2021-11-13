@@ -224,9 +224,11 @@ class PatternDialog(QtWidgets.QDialog):
                     self.find_label_by_name(p_name).setPixmap(pixmap)
                 # ну и записать pattern_name как селект
                 self.selected = p_name
-        except Exception as e:
-            # вдруг что-то пойдет не так
-            print(e.__str__())
+        except FileNotFoundError as e:
+            # вдруг preview файл был удален
+            self.error_message(e.__str__())
+        except AttributeError as e:
+            self.error_message(e.__str__())
 
     def update_picture(self, pattern_id):
         # поиск и восстановление картинки нужного лейбла, id = чистый
@@ -310,23 +312,19 @@ class PatternDialog(QtWidgets.QDialog):
         if not self.selected:
             self.error_message()
             return
-        try:
-            pattern = find_pattern_by_id(self.pattern_list, self.selected)
-            if pattern:
-                if pattern[5]:
-                    # если дефолт шаблон
-                    self.error_message('Этот шаблон является базовым и не может быть удалён')
-                    return
-                else:
-                    # спрашиваем дополнительное подтверждение
-                    agreement = AgreementDialog(self,
-                                                'Вы действительно хотите\n удалить этот шаблон?').exec_()
-                    if agreement:
-                        # если согласны - удалить
-                        self.delete_script(get_clean_id(pattern[0]))
-        except Exception as e:
-            # есть что-то пошло не так - ничего не делать
-            print(e.__str__())
+        pattern = find_pattern_by_id(self.pattern_list, self.selected)
+        if pattern:
+            if pattern[5]:
+                # если дефолт шаблон
+                self.error_message('Этот шаблон является базовым и не может быть удалён')
+                return
+            else:
+                # спрашиваем дополнительное подтверждение
+                agreement = AgreementDialog(self,
+                                            'Вы действительно хотите\n удалить этот шаблон?').exec_()
+                if agreement:
+                    # если согласны - удалить
+                    self.delete_script(get_clean_id(pattern[0]))
 
     def delete_script(self, pattern_id):
         # удаляем с бд
