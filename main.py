@@ -14,7 +14,6 @@ from Dialog.AgreementDialog import AgreementDialog
 from Dialog.PatternDialog import PatternDialog
 from Pattern.Pattern import find_pattern_by_id
 from Pattern.RegPatterns import recreate_patterns
-from Utils.AlphaConverter import convert_image
 from Utils.ChangeCSV import restore_default_csv, change_color
 from Utils.Delimiter import text_delimiter
 from Utils.Pallite import create_palette
@@ -112,7 +111,7 @@ class Window(QMainWindow):
     def recreate_image(self):
         # Пересоздает мем и сохраняет его в Output
         if self.img_pattern:
-            meme = Image.open('Images/Temp/img_patternTemp.png').convert('RGB')
+            meme = Image.open('Images/Temp/img_patternTemp.png')
             draw = ImageDraw.Draw(meme)
             flag = False
             # Сам процесс создания картинки
@@ -220,9 +219,10 @@ class Window(QMainWindow):
             if f_name[0]:
                 f_image = Image.open(f_name[0])
                 # фикс чеерного фона при имеющимся канале прозрачности
-                if f_image.mode[-1] == 'A':
-                    f_image = f_image.convert('RGBA')
-                    f_image = convert_image(f_image)
+                # if f_image.mode[-1] == 'A':
+                #     f_image = f_image.convert('RGBA')
+                #     f_image = convert_image(f_image)
+                f_image = f_image.convert('RGBA')
                 return f_image
             # если картинка не выбрана - оставить картинки, которые уже есть
             elif img_id == 1:
@@ -338,7 +338,7 @@ class Window(QMainWindow):
             size = self.img_pattern[image_id + 2][2]
             position = self.img_pattern[image_id + 2][1]
             image = image.resize(size)
-            target.paste(image, position)
+            target.paste(image, box=position, mask=image)
             return image
         except Exception as e:
             QMessageBox.critical(self, 'Ошибка',

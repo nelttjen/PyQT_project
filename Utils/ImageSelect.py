@@ -11,4 +11,3 @@ def image_select(pattern_name):
     background.paste(p_img, (5, 5))
     selected = background.resize(p_img.size)
     selected.save('./Images/Temp/select.png')
-
