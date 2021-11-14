@@ -492,9 +492,11 @@ class ChangeDialog(QDialog):
         if f_path:
             pixmap_handler(self.pattern_preview, QPixmap(f_path))
             new_pattern = Image.open(f_path)
+            new_pattern = new_pattern.resize((1920, 1080))
             if new_pattern.mode[-1] == 'A':
                 new_pattern = convert_image(new_pattern.convert('RGBA'))
-            new_pattern = new_pattern.resize((1920, 1080))
+            else:
+                new_pattern = new_pattern.convert('RGB')
             new_pattern.save(NEW_PATTERN_PATH)
             self.path = NEW_PATTERN_PATH
             if self.mode != CREATE_MODE:
