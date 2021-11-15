@@ -15,3 +15,23 @@ PREVIEW_SIZE: tuple = (854, 540)
 CSV_DEFAULT: list = [['key_id', 'color_r', 'color_g', 'color_b'],
                      ['MainScreen', '229', '228', '226'],
                      ['PatternDialog', '220', '220', '220']]
+
+CSS_DEFAULT = '''
+QPushButton {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    background-color: white;
+}
+QPushButton:hover {
+    background-color: #bbcbcf;\
+}
+QPushButton:disabled {
+    border-color: #aebec2;
+    border-style: solid;
+    border-width: 1px;
+    background-color: white;
+}
+'''[1:]
+
+GIT_CONTENT_URL = 'https://raw.githubusercontent.com/nelttjen/PyQT_project/main/'

@@ -356,7 +356,7 @@ class PatternDialog(QtWidgets.QDialog):
         sure = AgreementDialog(self, 'Вы действительно хотите\nвостановить значение по умолчанию?').exec_()
         if sure:
             key_id = self.objectName()
-            restore_default_csv(key_id, isFullRestore=False)
+            restore_default_csv(key_id=key_id, is_full_restore=False)
             self.change_palette(key_id)
 
     # изменение бекграунда

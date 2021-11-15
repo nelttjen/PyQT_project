@@ -4,20 +4,23 @@ from Utils.Pallite import load_csv
 from Utils.Values import CSV_DEFAULT
 
 
-def restore_default_csv(key_id, isFullRestore=False):
-    csv_data = load_csv()
+def restore_default_csv(key_id='', is_full_restore=False):
     with open('./Data/Background.csv', 'w', newline='') as out:
-        try:
-            for i, cell in enumerate(CSV_DEFAULT):
-                if cell[0] == key_id:
-                    csv_data[i] = cell
-            write = csv.writer(out, delimiter=';')
-            if isFullRestore:
-                write.writerows(CSV_DEFAULT)
-            else:
+        csv_data = load_csv()
+        if not csv_data:
+            is_full_restore = True
+        write = csv.writer(out, delimiter=';')
+        if is_full_restore:
+            write.writerows(CSV_DEFAULT)
+        else:
+            try:
+                print(csv_data)
+                for i, cell in enumerate(CSV_DEFAULT):
+                    if cell[0] == key_id:
+                        csv_data[i] = cell
                 write.writerows(csv_data)
-        finally:
-            out.close()
+            finally:
+                out.close()
 
 
 def change_color(color, key_id):

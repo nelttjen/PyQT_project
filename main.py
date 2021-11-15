@@ -14,6 +14,7 @@ from Dialog.AgreementDialog import AgreementDialog
 from Dialog.PatternDialog import PatternDialog
 from Pattern.Pattern import find_pattern_by_id
 from Pattern.RegPatterns import recreate_patterns
+from Utils.AppplicationDataChecker import check_all_data
 from Utils.ChangeCSV import restore_default_csv, change_color
 from Utils.Delimiter import text_delimiter
 from Utils.Pallite import create_palette
@@ -310,7 +311,7 @@ class Window(QMainWindow):
         sure = AgreementDialog(self, 'Вы действительно хотите\nвостановить значение по умолчанию?').exec_()
         if sure:
             key_id = self.objectName()
-            restore_default_csv(key_id, isFullRestore=False)
+            restore_default_csv(key_id=key_id, is_full_restore=False)
             self.change_palette(key_id)
 
     def change_palette(self, key_id):
@@ -411,9 +412,13 @@ def check_preview_patterns():
 
 
 def init_app():
-    check_preview_patterns()
-    resize_patterns()
-    return recreate_patterns()
+    patterns = []
+    check_success = check_all_data()
+    if check_success:
+        check_preview_patterns()
+        resize_patterns()
+        patterns = recreate_patterns()
+    return patterns, check_success
 
 
 def except_hook(cls, exception, traceback):
@@ -437,12 +442,13 @@ def clear_temp():
 
 if __name__ == '__main__':
     # создание окна и запуск приложения
-    list_patterns = init_app()
-    app = QApplication(sys.argv)
-    sys.excepthook = except_hook
-    f = Window(list_patterns)
-    f.setPalette(create_palette('MainScreen'))
-    f.show()
-    app.exec_()
-    clear_temp()
+    list_patterns, success = init_app()
+    if success:
+        app = QApplication(sys.argv)
+        sys.excepthook = except_hook
+        f = Window(list_patterns)
+        f.setPalette(create_palette('MainScreen'))
+        f.show()
+        app.exec_()
+        clear_temp()
     sys.exit()
